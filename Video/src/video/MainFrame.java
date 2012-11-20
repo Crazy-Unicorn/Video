@@ -21,12 +21,15 @@ import javax.swing.JOptionPane;
 public class MainFrame extends javax.swing.JFrame {
 
     private Foo model = new Foo();
+    private Hopfield net;
     
     /**
      * Creates new form MainFrame
      */
     public MainFrame() {
         initComponents();
+        net = new Hopfield(10, 10);
+        net.learn();
     }
     
     /**
