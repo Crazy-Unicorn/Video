@@ -73,5 +73,9 @@ public class Hopfield {
         
     }
     
+    public int[] resize(int[][] figure) {
+        
+        return null;
+    }
     
 }
