@@ -6,6 +6,7 @@ package video;
 
 import com.xuggle.xuggler.demos.VideoImage;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
@@ -14,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 /**
  *
@@ -23,6 +25,27 @@ public class MainFrame extends javax.swing.JFrame {
 
     private Foo model = new Foo();
     private Hopfield net;
+    
+    private MainFrame frame = this;
+    
+    private boolean active = true;
+    
+    public void setActive() {
+        //active = true;
+        //buttonFileChooser.setEnabled(true);
+        setState(true);
+    }
+    
+    public void setPassive() {
+        //active = false;
+        setState(false);
+    }
+    
+    private void setState(boolean state) {
+        buttonFileChooser.setEnabled(state);
+        buttonStart.setEnabled(state);
+        buttonSimpleView.setEnabled(state);
+    }
     
     /**
      * Creates new form MainFrame
@@ -42,51 +65,62 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        ButtonFileChooser = new javax.swing.JButton();
-        ButtonStart = new javax.swing.JButton();
+        buttonFileChooser = new javax.swing.JButton();
+        buttonStart = new javax.swing.JButton();
         loadingLabel = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        buttonSimpleView = new javax.swing.JButton();
         panel = new video.VideoPanel();
+        stopButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Видео в символы");
 
-        ButtonFileChooser.setText("Выбрать файл");
-        ButtonFileChooser.addActionListener(new java.awt.event.ActionListener() {
+        buttonFileChooser.setText("Выбрать файл");
+        buttonFileChooser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ButtonFileChooserActionPerformed(evt);
+                buttonFileChooserActionPerformed(evt);
             }
         });
 
-        ButtonStart.setText("Запустить");
-        ButtonStart.setEnabled(false);
-        ButtonStart.addActionListener(new java.awt.event.ActionListener() {
+        buttonStart.setText("Запустить");
+        buttonStart.setEnabled(false);
+        buttonStart.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ButtonStartActionPerformed(evt);
+                buttonStartActionPerformed(evt);
             }
         });
 
         loadingLabel.setText(" ");
 
-        jButton1.setText("Обычный просмотр");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        buttonSimpleView.setText("Обычный просмотр");
+        buttonSimpleView.setEnabled(false);
+        buttonSimpleView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                buttonSimpleViewActionPerformed(evt);
             }
         });
 
-        panel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        panel.setBorder(null);
+        panel.setPreferredSize(new java.awt.Dimension(480, 320));
 
         javax.swing.GroupLayout panelLayout = new javax.swing.GroupLayout(panel);
         panel.setLayout(panelLayout);
         panelLayout.setHorizontalGroup(
             panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 351, Short.MAX_VALUE)
+            .addGap(0, 480, Short.MAX_VALUE)
         );
         panelLayout.setVerticalGroup(
             panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 132, Short.MAX_VALUE)
+            .addGap(0, 320, Short.MAX_VALUE)
         );
+
+        stopButton.setText("Стоп");
+        stopButton.setEnabled(false);
+        stopButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -98,34 +132,45 @@ public class MainFrame extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(ButtonFileChooser)
+                                .addComponent(buttonFileChooser)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(ButtonStart))
+                                .addComponent(buttonStart))
                             .addComponent(loadingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1))
+                        .addComponent(buttonSimpleView)
+                        .addGap(43, 43, 43)
+                        .addComponent(stopButton))
                     .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(46, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ButtonFileChooser)
-                    .addComponent(ButtonStart)
-                    .addComponent(jButton1))
+                    .addComponent(buttonFileChooser)
+                    .addComponent(buttonStart)
+                    .addComponent(buttonSimpleView)
+                    .addComponent(stopButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(loadingLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(42, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void ButtonFileChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonFileChooserActionPerformed
+    /*public void paint(Graphics g) {
+	g.setColor(Color.RED);
+
+        g.fillRect(0, 0, getWidth(), getHeight());
+    }*/
+    
+    private void buttonFileChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonFileChooserActionPerformed
+        if (active==false)
+            return;
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogType(JFileChooser.OPEN_DIALOG);
         //chooser.addChoosableFileFilter(new FileChooserFilter());
@@ -139,7 +184,8 @@ public class MainFrame extends javax.swing.JFrame {
                 model.fileChecker(chooser.getSelectedFile());
                 this.repaint();
                 loadingLabel.setText("Файл подходит для обработки");
-                ButtonStart.setEnabled(true);
+                buttonStart.setEnabled(true);
+                buttonSimpleView.setEnabled(true);
                 /*FileInputStream fis;
                 if (chooser.getSelectedFile().getName().toLowerCase().endsWith(".xml"))
                     fis = new FileInputStream(chooser.getSelectedFile().getPath());
@@ -177,7 +223,8 @@ public class MainFrame extends javax.swing.JFrame {
             }*/
             } catch (Exception e) {
                 loadingLabel.setText("Ошибка формата файла");
-                ButtonStart.setEnabled(false);
+                buttonStart.setEnabled(false);
+                buttonSimpleView.setEnabled(false);
                 JOptionPane.showMessageDialog(this, e.getMessage(),
                     "Ошибка", JOptionPane.ERROR_MESSAGE); 
             } /*finally {
@@ -186,9 +233,11 @@ public class MainFrame extends javax.swing.JFrame {
         } else {
             //loadingLabel.setText("");
         }
-    }//GEN-LAST:event_ButtonFileChooserActionPerformed
+    }//GEN-LAST:event_buttonFileChooserActionPerformed
 
-    private void ButtonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonStartActionPerformed
+    private void buttonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStartActionPerformed
+        if (active==false)
+            return;
         try {
             model.process();
             loadingLabel.setText("Обработка файла завершена!");
@@ -197,29 +246,57 @@ public class MainFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, e.getMessage(),
                     "Ошибка", JOptionPane.ERROR_MESSAGE);                
         }
-    }//GEN-LAST:event_ButtonStartActionPerformed
+    }//GEN-LAST:event_buttonStartActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        /*try {
-            model.simpleview(panel);
+    private void buttonSimpleViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSimpleViewActionPerformed
+        if (active==false)
+            return;
+        try {
+            //model.simpleview(panel);
+            
+            class HelloThread extends Thread {
+
+                public void run() {
+                    //System.out.println("Hello, world!");
+                    stopButton.setEnabled(true);
+                    model.simpleview(panel, frame);
+                    stopButton.setEnabled(false);
+                }
+            }
+    
+
+
+                Thread t = new HelloThread();
+                t.start();
+                /*try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    System.err.println("errrrrrr");
+                }*/
+
         } catch (Exception e) {
                 loadingLabel.setText("Просмотр файла завершился ошибкой");
                 JOptionPane.showMessageDialog(this, e.getMessage(),
                     "Ошибка", JOptionPane.ERROR_MESSAGE);                
-        }*/
-        openJavaWindow();
-    }//GEN-LAST:event_jButton1ActionPerformed
+        }
+        //openJavaWindow();
+            //new org.jdesktop.swingx.JXDialog(this, new JPanel()).setVisible(true);
+    }//GEN-LAST:event_buttonSimpleViewActionPerformed
+
+    private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+        model.stop();
+    }//GEN-LAST:event_stopButtonActionPerformed
   
-    private static VideoImage mScreen = null;
+    /*private static VideoImage mScreen = null;
     
     private static void openJavaWindow() {
         mScreen = new VideoImage();
-    }
+    }*/
     
     /**
      * @param args the command line arguments
      */
-    //public static void main(String args[]) {
+    public static void main(String args[]) {
         /*
          * Set the Nimbus look and feel
          */
@@ -228,7 +305,7 @@ public class MainFrame extends javax.swing.JFrame {
          * If Nimbus (introduced in Java SE 6) is not available, stay with the
          * default look and feel. For details see
          * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         *//*
+         */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -250,18 +327,19 @@ public class MainFrame extends javax.swing.JFrame {
         /*
          * Create and display the form
          */
-   /*     java.awt.EventQueue.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
                 new MainFrame().setVisible(true);
             }
         });
-    }*/
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton ButtonFileChooser;
-    private javax.swing.JButton ButtonStart;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton buttonFileChooser;
+    private javax.swing.JButton buttonSimpleView;
+    private javax.swing.JButton buttonStart;
     private javax.swing.JLabel loadingLabel;
     private video.VideoPanel panel;
+    private javax.swing.JButton stopButton;
     // End of variables declaration//GEN-END:variables
 }

@@ -76,6 +76,9 @@ public class Hopfield {
     public int[] resize(int[][] figure, int width, int height) {
         int[] newfigure = new int[this.width*this.height];
         
+        if (this.width>width) {
+            
+        }
         
         return null;
     }

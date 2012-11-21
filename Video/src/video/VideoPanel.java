@@ -7,6 +7,7 @@ package video;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 /**
  *
@@ -14,7 +15,7 @@ import java.awt.Graphics2D;
  */
 public class VideoPanel extends javax.swing.JPanel {
 
-    private int i=0;
+    //private int i=0;
     
     /**
      * Creates new form VideoPanel
@@ -68,5 +69,25 @@ public class VideoPanel extends javax.swing.JPanel {
 
     }
 
+    public void setSize(BufferedImage image, MainFrame frame) {
+        //if (this.getSize().getWidth()!=image.getWidth() || this.getSize().getHeight()!=image.getHeight()) {
+            //this.setSize(image.getWidth(),image.getHeight());
+            //frame.repaint();
+            //frame.pack();
+        //}
+        //this.getGraphics().drawImage(image, 0, 0, this);
+    }
+    
+    public void setImage(BufferedImage image) {
+        if (this.getSize().getWidth()!=image.getWidth() || this.getSize().getHeight()!=image.getHeight()) {
+            this.setSize(image.getWidth(),image.getHeight());
+            //frame.pack();
+            //frame.repaint();
+            //frame.setSize(1000, 800);
+        }
+        this.getGraphics().drawImage(image, 0, 0, this);
+        //frame.doLayout();
+    }
+    
     
 }
