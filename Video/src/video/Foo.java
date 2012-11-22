@@ -6,10 +6,15 @@ package video;
 
 import com.xuggle.xuggler.*;
 import com.xuggle.xuggler.demos.VideoImage;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.Raster;
 import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.JPanel;
 
 public class Foo {
@@ -87,8 +92,8 @@ public class Foo {
         
         //File outdir0 = new File("D:/Users/goryunov/NetBeans/Video/Video/Video/4testing/out");
         //outdir0.mkdir();
-        File outdir = new File("D:/Users/goryunov/NetBeans/Video/Video/Video/4testing/out/"+file.getName().substring(0, filename.indexOf(".")));
-        outdir.mkdir();
+        //File outdir = new File("D:/Users/goryunov/NetBeans/Video/Video/Video/4testing/out/"+file.getName().substring(0, filename.indexOf(".")));
+        //outdir.mkdir();
         
         if (container.open(fullfilename, IContainer.Type.READ, null) < 0) {
             throw new IllegalArgumentException("could not open file: \n\n"
@@ -296,7 +301,7 @@ public class Foo {
     }
     
     
-    public void processview(VideoPanel panel, VideoPanel output, MainFrame frame) {
+    public void processview(VideoPanel panel, VideoPanel output, MainFrame frame, int each, int framesCount, int colorlimit) {
         stop = false;
         
         frame.setPassive();
@@ -304,7 +309,10 @@ public class Foo {
         if (this.file == null) {
                 throw new RuntimeException("Проблемы с файлом!");
             }
-
+        
+        int imgNumber = 0;
+        images = new ArrayList<BufferedImage>();
+        
         if (!IVideoResampler.isSupported(
             IVideoResampler.Feature.FEATURE_COLORSPACECONVERSION))
         throw new RuntimeException("you must install the GPL version" +
@@ -316,8 +324,8 @@ public class Foo {
         String fullfilename = file.getPath();
         String filename = file.getName();
         
-        File outdir = new File("D:/Users/goryunov/NetBeans/Video/Video/Video/4testing/out/"+file.getName().substring(0, filename.indexOf(".")));
-        outdir.mkdir();
+        //File outdir = new File("D:/Users/goryunov/NetBeans/Video/Video/Video/4testing/out/"+file.getName().substring(0, filename.indexOf(".")));
+        //outdir.mkdir();
         
         if (container.open(fullfilename, IContainer.Type.READ, null) < 0) {
             throw new IllegalArgumentException("could not open file: \n\n"
@@ -416,9 +424,38 @@ public class Foo {
                             }
                         }
                         BufferedImage javaImage = Utils.videoPictureToImage(newPic);
-
+//javaImage.get
+                        
+                        //long pre = System.currentTimeMillis();
                         panel.setImage(javaImage);
-                        output.setImage(javaImage);
+                        
+                        //long pre = System.currentTimeMillis();
+
+                        
+                        if (imgNumber%each==0) {
+                            if (images.size()<framesCount)
+                                images.add(javaImage);
+                            else
+                                images.set((imgNumber/each)%framesCount, javaImage);
+
+                            //java.lang.System.out.println((imgNumber)%framesCount);
+                            //imgNumber++;
+                        }
+                        imgNumber++;
+                        //java.lang.System.out.println("q1");
+                        BufferedImage processedResult = getProcessedResult(javaImage);
+                        //java.lang.System.out.println("q2");
+                        BufferedImage cutFon = getCutFon(javaImage, processedResult, false, colorlimit);
+                        //java.lang.System.out.println("q3");
+                        output.setImage(cutFon);
+                        //java.lang.System.out.println("q4");
+                        //long post = System.currentTimeMillis();
+                        //java.lang.System.out.println(post-pre);
+                        
+                        //long post = System.currentTimeMillis();
+                        
+                        //java.lang.System.out.println(post-pre);
+                        //java.lang.System.out.println(getColor(javaImage, 1,1).getRed()+" "+getColor(javaImage, 1,1).getGreen()+" "+getColor(javaImage, 1,1).getBlue());
                     }
                 }
             } else {
@@ -439,6 +476,113 @@ public class Foo {
         frame.setActive();
 
         stop = true;
+    }
+    
+    ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
+    
+    public Color getColor(BufferedImage img, int x, int y) {
+
+      Raster raster = img.getRaster();
+      ColorModel model = img.getColorModel();
+      Object data = raster.getDataElements(x, y, null);
+      int argb = model.getRGB(data);
+      
+      return new Color(argb, true);
+    }
+    
+    public BufferedImage getProcessedResult(BufferedImage image) {
+        //java.lang.System.out.println(images.size());
+        int width = image.getWidth();
+        int height = image.getHeight();
+        if (images.isEmpty())
+            return new BufferedImage(width,
+            height, BufferedImage.TYPE_INT_ARGB);
+        
+        //int width = images.get(0).getWidth();
+        //int height = images.get(0).getHeight();
+        int N = images.size();
+        BufferedImage res = new BufferedImage(width,
+            height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = res.createGraphics();
+        //new Color
+        //g2.setColor(Color.red);
+        //g2.drawOval(10, 10, 1, 1);
+        //java.lang.System.out.println(getColor(res, 1, 1).getBlue());
+        int i,j,r,g,b,n;
+        //Color color;
+              
+      //long pre = System.currentTimeMillis();
+
+        for (i=0; i<width; i++)
+            for (j=0; j<height; j++) {
+                r = 0;
+                g = 0;
+                b = 0;
+                for (n=0; n<N; n++) {
+                    Color color = getColor(images.get(n), i, j);
+                    r += color.getRed();
+                    g += color.getGreen();
+                    b += color.getBlue();
+                }
+                r = r/N;
+                g = g/N;
+                b = b/N;
+                g2.setColor(new Color(r,g,b));
+                g2.drawLine(i, j, i, j);
+            }
+      //long post = System.currentTimeMillis();
+      //java.lang.System.out.println(post-pre);
+        return res;
+    }
+    
+    public BufferedImage getCutFon(BufferedImage original, BufferedImage cutter, boolean simple, int limit) {
+        int width = original.getWidth();
+        int height = original.getHeight();
+        
+        BufferedImage res = new BufferedImage(width,
+            height, BufferedImage.TYPE_INT_ARGB);
+        
+        Graphics2D g2 = res.createGraphics();
+        
+        if (simple) {
+            for (int i=0; i<width; i++)
+                for (int j=0; j<height; j++) {
+                    Color cOrig = getColor(original, i, j);
+                    Color cCut = getColor(cutter, i, j);
+                    int r = Math.abs(cOrig.getRed()-cCut.getRed());
+                    int g = Math.abs(cOrig.getGreen()-cCut.getGreen());
+                    int b = Math.abs(cOrig.getBlue()-cCut.getBlue());
+                    g2.setColor(new Color(r,g,b));
+                    g2.drawLine(i, j, i, j);                
+                }
+        } else {
+            //int limit = 80;
+            int pixcount = width*height;
+            int backgrpixcount = 0;
+            for (int i=0; i<width; i++)
+                for (int j=0; j<height; j++) {
+                    Color cOrig = getColor(original, i, j);
+                    Color cCut = getColor(cutter, i, j);
+                    int value = Math.abs(cOrig.getRed()-cCut.getRed())+Math.abs(cOrig.getGreen()-cCut.getGreen())+Math.abs(cOrig.getBlue()-cCut.getBlue());
+                    value = colorToBin(value, limit);
+                    if (value==255)
+                        backgrpixcount++;
+                    g2.setColor(new Color(value,value,value));
+                    g2.drawLine(i, j, i, j);   
+                }
+            if (pixcount/backgrpixcount>2) {
+                images = new ArrayList<BufferedImage>();
+                images.add(original);
+            }
+        }
+        return res;
+    }
+    
+    private int colorToBin(int value, int limit) {
+        if (value<limit)
+            return 255;
+        else
+            return 0;
     }
     
     /*

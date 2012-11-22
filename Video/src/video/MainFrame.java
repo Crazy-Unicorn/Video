@@ -7,7 +7,11 @@ package video;
 import com.xuggle.xuggler.demos.VideoImage;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.Raster;
 import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -45,6 +49,12 @@ public class MainFrame extends javax.swing.JFrame {
         buttonFileChooser.setEnabled(state);
         buttonStart.setEnabled(state);
         buttonSimpleView.setEnabled(state);
+        fcMinus.setEnabled(state);
+        fcPlus.setEnabled(state);
+        fpsMinus.setEnabled(state);
+        fpsPlus.setEnabled(state);
+        colLimMinus.setEnabled(state);
+        colLimPlus.setEnabled(state);        
     }
     
     /**
@@ -74,6 +84,19 @@ public class MainFrame extends javax.swing.JFrame {
         panel = new video.VideoPanel();
         stopButton = new javax.swing.JButton();
         generated = new video.VideoPanel();
+        fps = new javax.swing.JTextField();
+        fpsMinus = new javax.swing.JButton();
+        fpsPlus = new javax.swing.JButton();
+        fcMinus = new javax.swing.JButton();
+        framesCount = new javax.swing.JTextField();
+        fcPlus = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        colorLimit = new javax.swing.JTextField();
+        colLimPlus = new javax.swing.JButton();
+        colLimMinus = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Видео в символы");
@@ -109,6 +132,11 @@ public class MainFrame extends javax.swing.JFrame {
         });
 
         panel.setPreferredSize(new java.awt.Dimension(480, 320));
+        panel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                panelMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelLayout = new javax.swing.GroupLayout(panel);
         panel.setLayout(panelLayout);
@@ -142,6 +170,63 @@ public class MainFrame extends javax.swing.JFrame {
             .addGap(0, 320, Short.MAX_VALUE)
         );
 
+        fps.setText("8");
+        fps.setEnabled(false);
+
+        fpsMinus.setText("-");
+        fpsMinus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fpsMinusActionPerformed(evt);
+            }
+        });
+
+        fpsPlus.setText("+");
+        fpsPlus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fpsPlusActionPerformed(evt);
+            }
+        });
+
+        fcMinus.setText("-");
+        fcMinus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fcMinusActionPerformed(evt);
+            }
+        });
+
+        framesCount.setText("12");
+        framesCount.setEnabled(false);
+
+        fcPlus.setText("+");
+        fcPlus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fcPlusActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("каждый");
+
+        jLabel2.setText("всего");
+
+        colorLimit.setText("40");
+        colorLimit.setEnabled(false);
+
+        colLimPlus.setText("+");
+        colLimPlus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                colLimPlusActionPerformed(evt);
+            }
+        });
+
+        colLimMinus.setText("-");
+        colLimMinus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                colLimMinusActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setText("предел по цвету");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -149,6 +234,10 @@ public class MainFrame extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(generated, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
@@ -158,13 +247,35 @@ public class MainFrame extends javax.swing.JFrame {
                             .addComponent(loadingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buttonSimpleView)
-                        .addGap(43, 43, 43)
-                        .addComponent(stopButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(26, 26, 26)
+                        .addComponent(stopButton)
+                        .addGap(28, 28, 28)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fpsMinus)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fps, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fpsPlus)
+                        .addGap(28, 28, 28)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fcMinus)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(framesCount, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fcPlus)
                         .addGap(18, 18, 18)
-                        .addComponent(generated, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(47, Short.MAX_VALUE))
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(colLimMinus)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(colorLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(colLimPlus)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel3)))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -174,7 +285,20 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(buttonFileChooser)
                     .addComponent(buttonStart)
                     .addComponent(buttonSimpleView)
-                    .addComponent(stopButton))
+                    .addComponent(stopButton)
+                    .addComponent(fps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fpsMinus)
+                    .addComponent(fpsPlus)
+                    .addComponent(fcMinus)
+                    .addComponent(framesCount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fcPlus)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3)
+                    .addComponent(colorLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(colLimPlus)
+                    .addComponent(colLimMinus)
+                    .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
@@ -257,7 +381,7 @@ public class MainFrame extends javax.swing.JFrame {
                 loadingLabel.setText("Ошибка формата файла");
             }*/
         } else {
-            //loadingLabel.setText("");
+            loadingLabel.setText("");
         }
     }//GEN-LAST:event_buttonFileChooserActionPerformed
 
@@ -273,7 +397,7 @@ public class MainFrame extends javax.swing.JFrame {
                 public void run() {
                     stopButton.setEnabled(true);
                     frame.repaint();
-                    model.processview(panel, generated, frame);
+                    model.processview(panel, generated, frame, Integer.parseInt(fps.getText()), Integer.parseInt(framesCount.getText()), Integer.parseInt(colorLimit.getText()));
                     loadingLabel.setText("Обработка файла завершена!");
                     stopButton.setEnabled(false);
                 }
@@ -283,7 +407,8 @@ public class MainFrame extends javax.swing.JFrame {
         } catch (Exception e) {
                 loadingLabel.setText("Обработка файла завершилась ошибкой");
                 JOptionPane.showMessageDialog(this, e.getMessage(),
-                    "Ошибка", JOptionPane.ERROR_MESSAGE);                
+                    "Ошибка", JOptionPane.ERROR_MESSAGE);           
+                setActive();
         }
     }//GEN-LAST:event_buttonStartActionPerformed
 
@@ -291,6 +416,7 @@ public class MainFrame extends javax.swing.JFrame {
         if (active==false)
             return;
         try {
+            loadingLabel.setText("");
             //model.simpleview(panel);
             
             class HelloThread extends Thread {
@@ -317,7 +443,8 @@ public class MainFrame extends javax.swing.JFrame {
         } catch (Exception e) {
                 loadingLabel.setText("Просмотр файла завершился ошибкой");
                 JOptionPane.showMessageDialog(this, e.getMessage(),
-                    "Ошибка", JOptionPane.ERROR_MESSAGE);                
+                    "Ошибка", JOptionPane.ERROR_MESSAGE);   
+                setActive();
         }
         //openJavaWindow();
             //new org.jdesktop.swingx.JXDialog(this, new JPanel()).setVisible(true);
@@ -330,6 +457,69 @@ public class MainFrame extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         model.stop();
     }//GEN-LAST:event_formWindowClosing
+
+    private void panelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelMouseClicked
+
+      /*BufferedImage img = new BufferedImage(panel.getWidth(),
+      panel.getHeight(), BufferedImage.TYPE_INT_ARGB);
+      Graphics2D g2d = img.createGraphics();
+      //g2d.set
+      //panel.paint(g2d);
+      g2d = (Graphics2D)panel.getGraphics();
+      g2d.dispose();*/
+        /*panel.repaint();
+        BufferedImage img = panel.getBufferedImage();
+        if (img==null)
+            return;
+      Raster raster = img.getRaster();
+      ColorModel model = img.getColorModel();
+      Object data = raster.getDataElements(evt.getX(), evt.getY(), null);
+      java.lang.System.out.println(model.getRGB(data));
+      int argb = model.getRGB(data);
+      Color color = new Color(argb, true);
+
+      StringBuffer message =  new StringBuffer("Color ");
+      message.append("[A:").append(color.getAlpha()).append(",");
+      message.append("R:").append(color.getRed()).append(",");
+      message.append("G:").append(color.getGreen()).append(",");
+      message.append("B:").append(color.getBlue()).append("]");
+      JOptionPane.showMessageDialog(null, message.toString());
+
+      panel.repaint();*/
+    }//GEN-LAST:event_panelMouseClicked
+
+    private void fpsMinusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fpsMinusActionPerformed
+        int old = Integer.parseInt(fps.getText());
+        if (old<2)
+            return;
+        fps.setText(""+(old-1));
+    }//GEN-LAST:event_fpsMinusActionPerformed
+
+    private void fpsPlusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fpsPlusActionPerformed
+        fps.setText(""+(Integer.parseInt(fps.getText())+1));
+    }//GEN-LAST:event_fpsPlusActionPerformed
+
+    private void fcMinusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fcMinusActionPerformed
+        int old = Integer.parseInt(framesCount.getText());
+        if (old<2)
+            return;
+        framesCount.setText(""+(old-1));
+    }//GEN-LAST:event_fcMinusActionPerformed
+
+    private void fcPlusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fcPlusActionPerformed
+        framesCount.setText(""+(Integer.parseInt(framesCount.getText())+1));
+    }//GEN-LAST:event_fcPlusActionPerformed
+
+    private void colLimMinusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colLimMinusActionPerformed
+        int old = Integer.parseInt(colorLimit.getText());
+        if (old<2)
+            return;
+        colorLimit.setText(""+(old-1));
+    }//GEN-LAST:event_colLimMinusActionPerformed
+
+    private void colLimPlusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colLimPlusActionPerformed
+        colorLimit.setText(""+(Integer.parseInt(colorLimit.getText())+1));
+    }//GEN-LAST:event_colLimPlusActionPerformed
   
     /*private static VideoImage mScreen = null;
     
@@ -382,7 +572,20 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton buttonFileChooser;
     private javax.swing.JButton buttonSimpleView;
     private javax.swing.JButton buttonStart;
+    private javax.swing.JButton colLimMinus;
+    private javax.swing.JButton colLimPlus;
+    private javax.swing.JTextField colorLimit;
+    private javax.swing.JButton fcMinus;
+    private javax.swing.JButton fcPlus;
+    private javax.swing.JTextField fps;
+    private javax.swing.JButton fpsMinus;
+    private javax.swing.JButton fpsPlus;
+    private javax.swing.JTextField framesCount;
     private video.VideoPanel generated;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel loadingLabel;
     private video.VideoPanel panel;
     private javax.swing.JButton stopButton;
