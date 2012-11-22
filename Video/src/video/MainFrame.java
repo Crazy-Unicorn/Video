@@ -52,8 +52,10 @@ public class MainFrame extends javax.swing.JFrame {
      */
     public MainFrame() {
         initComponents();
-        net = new Hopfield(10, 10);
+        net = new Hopfield(5, 5);
         net.learn();
+        //net.test();
+        
     }
     
     /**
@@ -71,9 +73,15 @@ public class MainFrame extends javax.swing.JFrame {
         buttonSimpleView = new javax.swing.JButton();
         panel = new video.VideoPanel();
         stopButton = new javax.swing.JButton();
+        generated = new video.VideoPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Видео в символы");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         buttonFileChooser.setText("Выбрать файл");
         buttonFileChooser.addActionListener(new java.awt.event.ActionListener() {
@@ -82,7 +90,7 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
-        buttonStart.setText("Запустить");
+        buttonStart.setText("Обработать");
         buttonStart.setEnabled(false);
         buttonStart.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -100,7 +108,6 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
-        panel.setBorder(null);
         panel.setPreferredSize(new java.awt.Dimension(480, 320));
 
         javax.swing.GroupLayout panelLayout = new javax.swing.GroupLayout(panel);
@@ -122,6 +129,19 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        generated.setPreferredSize(new java.awt.Dimension(480, 320));
+
+        javax.swing.GroupLayout generatedLayout = new javax.swing.GroupLayout(generated);
+        generated.setLayout(generatedLayout);
+        generatedLayout.setHorizontalGroup(
+            generatedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 480, Short.MAX_VALUE)
+        );
+        generatedLayout.setVerticalGroup(
+            generatedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 320, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -140,8 +160,11 @@ public class MainFrame extends javax.swing.JFrame {
                         .addComponent(buttonSimpleView)
                         .addGap(43, 43, 43)
                         .addComponent(stopButton))
-                    .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(46, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(generated, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(47, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -153,10 +176,13 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(buttonSimpleView)
                     .addComponent(stopButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(loadingLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(42, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(loadingLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(generated, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(57, Short.MAX_VALUE))
         );
 
         pack();
@@ -239,8 +265,21 @@ public class MainFrame extends javax.swing.JFrame {
         if (active==false)
             return;
         try {
-            model.process();
-            loadingLabel.setText("Обработка файла завершена!");
+            //model.process();
+            //model.processview(panel, generated, frame);
+            //loadingLabel.setText("Обработка файла завершена!");
+            
+            class HelloThread extends Thread {
+                public void run() {
+                    stopButton.setEnabled(true);
+                    frame.repaint();
+                    model.processview(panel, generated, frame);
+                    loadingLabel.setText("Обработка файла завершена!");
+                    stopButton.setEnabled(false);
+                }
+            }
+            Thread t = new HelloThread();
+            t.start();
         } catch (Exception e) {
                 loadingLabel.setText("Обработка файла завершилась ошибкой");
                 JOptionPane.showMessageDialog(this, e.getMessage(),
@@ -259,6 +298,7 @@ public class MainFrame extends javax.swing.JFrame {
                 public void run() {
                     //System.out.println("Hello, world!");
                     stopButton.setEnabled(true);
+                    frame.repaint();
                     model.simpleview(panel, frame);
                     stopButton.setEnabled(false);
                 }
@@ -286,6 +326,10 @@ public class MainFrame extends javax.swing.JFrame {
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
         model.stop();
     }//GEN-LAST:event_stopButtonActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        model.stop();
+    }//GEN-LAST:event_formWindowClosing
   
     /*private static VideoImage mScreen = null;
     
@@ -338,6 +382,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton buttonFileChooser;
     private javax.swing.JButton buttonSimpleView;
     private javax.swing.JButton buttonStart;
+    private video.VideoPanel generated;
     private javax.swing.JLabel loadingLabel;
     private video.VideoPanel panel;
     private javax.swing.JButton stopButton;
