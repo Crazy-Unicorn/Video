@@ -69,25 +69,18 @@ public class VideoPanel extends javax.swing.JPanel {
 
     }
 
-    public void setSize(BufferedImage image, MainFrame frame) {
-        //if (this.getSize().getWidth()!=image.getWidth() || this.getSize().getHeight()!=image.getHeight()) {
-            //this.setSize(image.getWidth(),image.getHeight());
-            //frame.repaint();
-            //frame.pack();
-        //}
-        //this.getGraphics().drawImage(image, 0, 0, this);
+    public void setSize(BufferedImage image) {
+        if (this.getSize().getWidth()!=image.getWidth() || this.getSize().getHeight()!=image.getHeight()) {
+            this.setSize(image.getWidth(),image.getHeight());
+        }
     }
     
     public void setImage(BufferedImage image) {
-        if (this.getSize().getWidth()!=image.getWidth() || this.getSize().getHeight()!=image.getHeight()) {
-            this.setSize(image.getWidth(),image.getHeight());
-            //frame.pack();
-            //frame.repaint();
-            //frame.setSize(1000, 800);
-        }
         this.getGraphics().drawImage(image, 0, 0, this);
-        //setBufferedImage(image);
-        //frame.doLayout();
+    }
+    
+    public void setImage(Graphics graphics, BufferedImage image) {
+        graphics.drawImage(image, 0, 0, this);
     }
     
     private BufferedImage bufImg = null;

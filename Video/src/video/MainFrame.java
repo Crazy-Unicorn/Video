@@ -12,7 +12,6 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
-import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -170,7 +169,7 @@ public class MainFrame extends javax.swing.JFrame {
             .addGap(0, 320, Short.MAX_VALUE)
         );
 
-        fps.setText("8");
+        fps.setText("1");
         fps.setEnabled(false);
 
         fpsMinus.setText("-");
@@ -194,7 +193,7 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
-        framesCount.setText("12");
+        framesCount.setText("100");
         framesCount.setEnabled(false);
 
         fcPlus.setText("+");
@@ -208,7 +207,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         jLabel2.setText("всего");
 
-        colorLimit.setText("40");
+        colorLimit.setText("45");
         colorLimit.setEnabled(false);
 
         colLimPlus.setText("+");
@@ -391,7 +390,7 @@ public class MainFrame extends javax.swing.JFrame {
         try {
             //model.process();
             //model.processview(panel, generated, frame);
-            //loadingLabel.setText("Обработка файла завершена!");
+            loadingLabel.setText("Обработка...");
             
             class HelloThread extends Thread {
                 public void run() {
