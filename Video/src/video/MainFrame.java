@@ -56,6 +56,26 @@ public class MainFrame extends javax.swing.JFrame {
         colLimPlus.setEnabled(state);        
     }
     
+    public boolean isSelectedRButtonFonModel() {
+        return rbuttonFonModel.isSelected();
+    }
+    
+    public boolean isSelectedRButtonPorogBit() {
+        return rbuttonPorogBit.isSelected();
+    }
+    
+    public boolean isSelectedRButtonPorogColor() {
+        return rbuttonPorogColor.isSelected();
+    }
+    
+    public boolean isSelectedRButtonPorogGrey() {
+        return rbuttonPorogGrey.isSelected();
+    }
+    
+    public boolean isSelectedSmenFon() {
+        return checkboxSmenFon.isSelected();
+    }
+    
     /**
      * Creates new form MainFrame
      */
@@ -64,9 +84,13 @@ public class MainFrame extends javax.swing.JFrame {
         net = new Hopfield(5, 5);
         net.learn();
         //net.test();
-        
+        buttonGroup.add(rbuttonFonModel);
+        buttonGroup.add(rbuttonPorogBit);
+        buttonGroup.add(rbuttonPorogColor);
+        buttonGroup.add(rbuttonPorogGrey);
+        rbuttonFonModel.setSelected(true);
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -76,6 +100,7 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup = new javax.swing.ButtonGroup();
         buttonFileChooser = new javax.swing.JButton();
         buttonStart = new javax.swing.JButton();
         loadingLabel = new javax.swing.JLabel();
@@ -96,6 +121,11 @@ public class MainFrame extends javax.swing.JFrame {
         colLimPlus = new javax.swing.JButton();
         colLimMinus = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        rbuttonFonModel = new javax.swing.JRadioButton();
+        rbuttonPorogBit = new javax.swing.JRadioButton();
+        rbuttonPorogColor = new javax.swing.JRadioButton();
+        rbuttonPorogGrey = new javax.swing.JRadioButton();
+        checkboxSmenFon = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Видео в символы");
@@ -193,7 +223,7 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
-        framesCount.setText("100");
+        framesCount.setText("50");
         framesCount.setEnabled(false);
 
         fcPlus.setText("+");
@@ -207,7 +237,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         jLabel2.setText("всего");
 
-        colorLimit.setText("45");
+        colorLimit.setText("30");
         colorLimit.setEnabled(false);
 
         colLimPlus.setText("+");
@@ -226,6 +256,42 @@ public class MainFrame extends javax.swing.JFrame {
 
         jLabel4.setText("предел по цвету");
 
+        rbuttonFonModel.setText("просто модель фона");
+        rbuttonFonModel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbuttonFonModelActionPerformed(evt);
+            }
+        });
+
+        rbuttonPorogBit.setText("пороговая обработка ч/б");
+        rbuttonPorogBit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbuttonPorogBitActionPerformed(evt);
+            }
+        });
+
+        rbuttonPorogColor.setText("п.о. в цвете");
+        rbuttonPorogColor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbuttonPorogColorActionPerformed(evt);
+            }
+        });
+
+        rbuttonPorogGrey.setText("п.о. серым");
+        rbuttonPorogGrey.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbuttonPorogGreyActionPerformed(evt);
+            }
+        });
+
+        checkboxSmenFon.setSelected(true);
+        checkboxSmenFon.setText("слежение за сменой фона");
+        checkboxSmenFon.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkboxSmenFonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -234,47 +300,60 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(generated, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(buttonFileChooser)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(buttonStart))
                             .addComponent(loadingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(buttonSimpleView)
-                        .addGap(26, 26, 26)
-                        .addComponent(stopButton)
-                        .addGap(28, 28, 28)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(fpsMinus)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(fps, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(fpsPlus)
-                        .addGap(28, 28, 28)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(fcMinus)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(framesCount, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(fcPlus)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(buttonSimpleView)
+                                .addGap(26, 26, 26)
+                                .addComponent(stopButton)
+                                .addGap(28, 28, 28)
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(fpsMinus)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(fps, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(fpsPlus)
+                                .addGap(28, 28, 28)
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(fcMinus)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(framesCount, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(fcPlus)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(colLimMinus)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(colorLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(colLimPlus)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel3))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(72, 72, 72)
+                                .addComponent(rbuttonFonModel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(rbuttonPorogBit)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(rbuttonPorogColor)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(rbuttonPorogGrey)
+                                .addGap(116, 116, 116)
+                                .addComponent(checkboxSmenFon))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(colLimMinus)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(colorLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(colLimPlus)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel3)))
-                .addContainerGap(30, Short.MAX_VALUE))
+                        .addComponent(generated, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -299,13 +378,18 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(colLimMinus)
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(loadingLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(loadingLabel)
+                    .addComponent(rbuttonFonModel)
+                    .addComponent(rbuttonPorogBit)
+                    .addComponent(rbuttonPorogColor)
+                    .addComponent(rbuttonPorogGrey)
+                    .addComponent(checkboxSmenFon))
+                .addGap(27, 27, 27)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(generated, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(57, Short.MAX_VALUE))
+                .addContainerGap(147, Short.MAX_VALUE))
         );
 
         pack();
@@ -519,6 +603,26 @@ public class MainFrame extends javax.swing.JFrame {
     private void colLimPlusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colLimPlusActionPerformed
         colorLimit.setText(""+(Integer.parseInt(colorLimit.getText())+1));
     }//GEN-LAST:event_colLimPlusActionPerformed
+
+    private void rbuttonFonModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbuttonFonModelActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rbuttonFonModelActionPerformed
+
+    private void rbuttonPorogBitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbuttonPorogBitActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rbuttonPorogBitActionPerformed
+
+    private void rbuttonPorogColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbuttonPorogColorActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rbuttonPorogColorActionPerformed
+
+    private void rbuttonPorogGreyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbuttonPorogGreyActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rbuttonPorogGreyActionPerformed
+
+    private void checkboxSmenFonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkboxSmenFonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_checkboxSmenFonActionPerformed
   
     /*private static VideoImage mScreen = null;
     
@@ -569,8 +673,10 @@ public class MainFrame extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonFileChooser;
+    private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JButton buttonSimpleView;
     private javax.swing.JButton buttonStart;
+    private javax.swing.JCheckBox checkboxSmenFon;
     private javax.swing.JButton colLimMinus;
     private javax.swing.JButton colLimPlus;
     private javax.swing.JTextField colorLimit;
@@ -587,6 +693,10 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel loadingLabel;
     private video.VideoPanel panel;
+    private javax.swing.JRadioButton rbuttonFonModel;
+    private javax.swing.JRadioButton rbuttonPorogBit;
+    private javax.swing.JRadioButton rbuttonPorogColor;
+    private javax.swing.JRadioButton rbuttonPorogGrey;
     private javax.swing.JButton stopButton;
     // End of variables declaration//GEN-END:variables
 }

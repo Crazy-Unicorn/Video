@@ -310,6 +310,21 @@ public class Foo {
         
         frame.setPassive();
         
+        boolean fonmodel = frame.isSelectedRButtonFonModel();
+        boolean porogBit = frame.isSelectedRButtonPorogBit();
+        boolean porogColor = frame.isSelectedRButtonPorogColor();
+        boolean porogGrey = frame.isSelectedRButtonPorogGrey();
+        boolean smenFon = frame.isSelectedSmenFon();
+        
+        int type = 0;
+        if (porogBit)
+            type = 1;
+        if (porogColor)
+            type = 2;
+        if (porogGrey)
+            type = 3;
+        //java.lang.System.out.println(smenFon);
+        
         if (this.file == null) {
                 throw new RuntimeException("Проблемы с файлом!");
             }
@@ -447,7 +462,7 @@ public class Foo {
                         ///post = System.currentTimeMillis();
                         //java.lang.System.out.println((post-pre)+" view");
                         
-                        ////pre = System.currentTimeMillis();
+                        pre = System.currentTimeMillis();
 
                         
                         /*if (imgNumber%each==0) {
@@ -459,14 +474,17 @@ public class Foo {
                         imgNumber++;*/
 
                         //try {
-                            BufferedImage processedResult = getProcessedResult(javaImage, each, framesCount);
+                            BufferedImage processedResult = getProcessedResult(javaImage, each, framesCount, colorlimit, smenFon);
 
                             try {
                             //BufferedImage cutFon = getCutFon(javaImage, processedResult, false, colorlimit);
-                            processedResult = getCutFon(javaImage, processedResult, false, colorlimit);
+                                //if (porogBit||porogColor)
+                                if (type>0)
+                                    processedResult = getCutFon(javaImage, processedResult, false, colorlimit, type, smenFon);
                             //processedResult = getShineFon(javaImage, processedResult, false, colorlimit);
                             
-                            output.setImage(gOutput, processedResult);//cutFon);
+                                output.setImage(gOutput, processedResult);//cutFon);
+                            //java.lang.System.out.println(images.size()+" Nsize");
                             } catch (RuntimeException e) {
                                 if (!e.getMessage().equals("forgetOldBackground"))
                                     throw e;
@@ -476,8 +494,9 @@ public class Foo {
                                 java.lang.System.out.println("err!");
                             }
                         }*/
-                        ////post = System.currentTimeMillis();
-                        ////java.lang.System.out.println((post-pre)+" processed");
+                        post = System.currentTimeMillis();
+                        java.lang.System.out.println(post-pre);
+                        //java.lang.System.out.println((post-pre)+" processed");
                     }
                 }
             } else {
@@ -514,7 +533,7 @@ public class Foo {
     
     private long[][][] rgb = null;
     
-    public BufferedImage getProcessedResult(BufferedImage image, int each, int framesCount) {
+    public BufferedImage getProcessedResult(BufferedImage image, int each, int framesCount, int limit, boolean smenFon) {
 
         int width = image.getWidth();
         int height = image.getHeight();
@@ -538,6 +557,7 @@ public class Foo {
                 images.add(image);
                 //java.lang.System.out.println("add, "+images.size());
             } else {
+                //java.lang.System.out.println("Nsize = "+images.size()+"  UPDpos = "+((int)((imgNumber/each)%framesCount)));
                 BufferedImage oldImage = images.get((int)((imgNumber/each)%framesCount));
                 for (int i=0; i<width; i++)
                     for (int j=0; j<height; j++) {
@@ -595,8 +615,13 @@ public class Foo {
                 g2.setColor(new Color(r,g,b));
                 g2.drawLine(i, j, i, j);
             }*/
-        long pre = System.currentTimeMillis();
+        //long pre = System.currentTimeMillis();
         int r=0, g=0, b=0;
+        
+    
+        int or=0, og=0, ob=0;
+        int bpix = 0;
+                
         //try {
         for (int i=0; i<width; i++)
             for (int j=0; j<height; j++) {
@@ -606,12 +631,28 @@ public class Foo {
                 
                 g2.setColor(new Color(r,g,b));
                 g2.drawLine(i, j, i, j);
+                
+                Color oldCol = getColor(image, i, j);
+                or = oldCol.getRed();
+                og = oldCol.getGreen();
+                ob = oldCol.getBlue();
+                if (Math.abs(r-or)+Math.abs(g-og)+Math.abs(b-ob)<limit)
+                    bpix++;
+                
             }
+        if (smenFon) {
+            int all = width*height;
+            if (all/(bpix+1)>3) {
+                //java.lang.System.out.println(bpix+" "+all+" смена");
+                    images = new ArrayList<BufferedImage>();
+                    rgb = null;
+            }
+        }
         //} catch (Exception e) {
         //    java.lang.System.out.println(r+" red "+g+" green "+b+" blue "+N+" N");
         //}
-      long post = System.currentTimeMillis();
-      java.lang.System.out.println(post-pre);
+      //long post = System.currentTimeMillis();
+      //java.lang.System.out.println(post-pre);
         return res;
     }
     
@@ -661,12 +702,18 @@ public class Foo {
         return res;
     }*/
     
-    public BufferedImage getCutFon(BufferedImage original, BufferedImage cutter, boolean simple, int limit) {
+    public BufferedImage getCutFon(BufferedImage original, BufferedImage cutter, boolean simple, int limit, /*boolean toBit,*/ int typePorog, boolean smenFon) {
+  
         int width = original.getWidth();
         int height = original.getHeight();
         
         BufferedImage res = new BufferedImage(width,
             height, BufferedImage.TYPE_INT_ARGB);
+        
+        //#
+        if (cutter==null)
+            return res;
+        //#
         
         Graphics2D g2 = res.createGraphics();
         
@@ -692,27 +739,40 @@ public class Foo {
                     int value = Math.abs(cOrig.getRed()-cCut.getRed())+Math.abs(cOrig.getGreen()-cCut.getGreen())+Math.abs(cOrig.getBlue()-cCut.getBlue());
                     value = colorToBin(value, limit);
                     
-                    /*if (value==255) {
-                        backgrpixcount++;
-                        g2.setColor(new Color(value,value,value));
-                    } else
-                        g2.setColor(new Color(cOrig.getRed(),cOrig.getGreen(),cOrig.getBlue()));*/
-                    
-                    if (value==255)
-                        backgrpixcount++;
-                    g2.setColor(new Color(value,value,value));   
+                    //if (toBit) {
+                    if (typePorog==1) {
+                        if (value==255)
+                            backgrpixcount++;
+                        g2.setColor(new Color(value,value,value));   
+                    } else if (typePorog==2) {
+                        if (value==255) {
+                            backgrpixcount++;
+                            g2.setColor(new Color(value,value,value));
+                        } else
+                            g2.setColor(new Color(cOrig.getRed(),cOrig.getGreen(),cOrig.getBlue()));
+                    } else if (typePorog==3) {
+                        if (value==255) {
+                            backgrpixcount++;
+                            g2.setColor(new Color(value,value,value));
+                        } else {
+                            int grey = (int)(cOrig.getRed()*0.299 + cOrig.getGreen()*0.587 + cOrig.getBlue()*0.114);
+                            //Color grey = new Color()
+                            g2.setColor(new Color(grey,grey,grey));
+                        }
+                    }
                     
                     g2.drawLine(i, j, i, j);   
                 }
             
-            if (pixcount/(backgrpixcount+1)>2) {
-                images = new ArrayList<BufferedImage>();
-                //images.add(original);
-                rgb = null;
-                //getProcessedResult(original, 1, 10);
-                //res = 
-                throw new RuntimeException("forgetOldBackground");
-            }
+            if (smenFon)
+                if (pixcount/(backgrpixcount+1)>3) {
+                    images = new ArrayList<BufferedImage>();
+                    //images.add(original);
+                    rgb = null;
+                    //getProcessedResult(original, 1, 10);
+                    //res = 
+                    throw new RuntimeException("forgetOldBackground");
+                }
         }
         return res;
     }
