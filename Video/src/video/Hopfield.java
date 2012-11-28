@@ -19,6 +19,18 @@ public class Hopfield {
         this.width = width;
         this.height = height;
         
+
+    }
+    
+    public int getWidth() {
+        return width;
+    }
+    
+    public int getHeight() {
+        return height;
+    }
+    
+    public void init() {
         int count = width*height;
         
         this.net = new int[count][count];

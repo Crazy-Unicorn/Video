@@ -16,17 +16,27 @@ import java.awt.image.Raster;
 import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import java.security.AccessController;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import sun.security.action.GetPropertyAction;
 
 public class Foo {
 
     private File file = null;
 
+    private Hopfield net = null;
+    
+    
     private boolean stop = true;
     
     public void stop() {
         stop = true;
+    }
+    
+    public void setNet(Hopfield net) {
+        this.net = net;
     }
     
     public void fileChecker(File file) {
@@ -316,6 +326,15 @@ public class Foo {
         boolean porogGrey = frame.isSelectedRButtonPorogGrey();
         boolean smenFon = frame.isSelectedSmenFon();
         
+        double smenFonLim = 2;
+        try {
+            smenFonLim = frame.getSmenFonLimValue();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(frame, e.getMessage(),
+                                "Ошибка ввода", JOptionPane.ERROR_MESSAGE); 
+            frame.getSmenFonLim().setText(""+smenFonLim);
+        }
+        
         int type = 0;
         if (porogBit)
             type = 1;
@@ -474,13 +493,13 @@ public class Foo {
                         imgNumber++;*/
 
                         //try {
-                            BufferedImage processedResult = getProcessedResult(javaImage, each, framesCount, colorlimit, smenFon);
+                            BufferedImage processedResult = getProcessedResult(javaImage, each, framesCount, colorlimit, smenFon, smenFonLim);
 
                             try {
                             //BufferedImage cutFon = getCutFon(javaImage, processedResult, false, colorlimit);
                                 //if (porogBit||porogColor)
                                 if (type>0)
-                                    processedResult = getCutFon(javaImage, processedResult, false, colorlimit, type, smenFon);
+                                    processedResult = getCutFon(javaImage, processedResult, false, colorlimit, type, smenFon, smenFonLim);
                             //processedResult = getShineFon(javaImage, processedResult, false, colorlimit);
                             
                                 output.setImage(gOutput, processedResult);//cutFon);
@@ -495,7 +514,7 @@ public class Foo {
                             }
                         }*/
                         post = System.currentTimeMillis();
-                        java.lang.System.out.println(post-pre);
+                        /////java.lang.System.out.println(post-pre);
                         //java.lang.System.out.println((post-pre)+" processed");
                     }
                 }
@@ -517,6 +536,8 @@ public class Foo {
         frame.setActive();
 
         stop = true;
+        
+        //java.lang.System.out.println(AccessController.doPrivileged(new GetPropertyAction("java.awt.graphicsenv", null)));
     }
     
     ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
@@ -533,7 +554,7 @@ public class Foo {
     
     private long[][][] rgb = null;
     
-    public BufferedImage getProcessedResult(BufferedImage image, int each, int framesCount, int limit, boolean smenFon) {
+    public BufferedImage getProcessedResult(BufferedImage image, int each, int framesCount, int limit, boolean smenFon, double smenFonLim) {
 
         int width = image.getWidth();
         int height = image.getHeight();
@@ -642,7 +663,7 @@ public class Foo {
             }
         if (smenFon) {
             int all = width*height;
-            if (all/(bpix+1)>3) {
+            if (all/(bpix+1)>smenFonLim) {//3) {
                 //java.lang.System.out.println(bpix+" "+all+" смена");
                     images = new ArrayList<BufferedImage>();
                     rgb = null;
@@ -702,7 +723,7 @@ public class Foo {
         return res;
     }*/
     
-    public BufferedImage getCutFon(BufferedImage original, BufferedImage cutter, boolean simple, int limit, /*boolean toBit,*/ int typePorog, boolean smenFon) {
+    public BufferedImage getCutFon(BufferedImage original, BufferedImage cutter, boolean simple, int limit, /*boolean toBit,*/ int typePorog, boolean smenFon, double smenFonLim) {
   
         int width = original.getWidth();
         int height = original.getHeight();
@@ -716,6 +737,10 @@ public class Foo {
         //#
         
         Graphics2D g2 = res.createGraphics();
+        
+        int[][] bitmap = null;
+        if (typePorog==1)
+            bitmap = new int[height][width];
         
         if (simple) {
             for (int i=0; i<width; i++)
@@ -741,15 +766,17 @@ public class Foo {
                     
                     //if (toBit) {
                     if (typePorog==1) {
-                        if (value==255)
+                        if (value==255) {
                             backgrpixcount++;
+                            bitmap[j][i]=0;
+                        } else bitmap[j][i]=1;
                         g2.setColor(new Color(value,value,value));   
                     } else if (typePorog==2) {
                         if (value==255) {
                             backgrpixcount++;
                             g2.setColor(new Color(value,value,value));
                         } else
-                            g2.setColor(new Color(cOrig.getRed(),cOrig.getGreen(),cOrig.getBlue()));
+                            g2.setColor(cOrig/*new Color(cOrig.getRed(),cOrig.getGreen(),cOrig.getBlue())*/);
                     } else if (typePorog==3) {
                         if (value==255) {
                             backgrpixcount++;
@@ -765,7 +792,7 @@ public class Foo {
                 }
             
             if (smenFon)
-                if (pixcount/(backgrpixcount+1)>3) {
+                if (pixcount/(backgrpixcount+1)>smenFonLim) {//3) {
                     images = new ArrayList<BufferedImage>();
                     //images.add(original);
                     rgb = null;
@@ -774,6 +801,41 @@ public class Foo {
                     throw new RuntimeException("forgetOldBackground");
                 }
         }
+        
+        if (net!=null && typePorog==1) {
+
+            int[] resbmp = net.resize(bitmap, width, height);
+            
+            //net.identify(resbmp);
+            
+            /*java.lang.System.out.println("\nДо трансформации");
+
+            for (int h=0; h<height; h++) {
+                for (int w=0; w<width; w++) {
+                    if (w==0)
+                        java.lang.System.out.println();
+                    if (w>0)
+                        java.lang.System.out.print(".");
+                    java.lang.System.out.print(bitmap[h][w]==1?"#":bitmap[h][w]);
+                }
+            }*/
+            java.lang.System.out.println("\n\nПосле трансформации");
+
+            int nw = net.getWidth();
+            int nh = net.getHeight();
+            
+            for (int h=0; h<nh; h++)
+                for (int w=0; w<nw; w++) {
+                    if (w==0)
+                        java.lang.System.out.println();
+                    if (w>0)
+                        java.lang.System.out.print(".");
+                    java.lang.System.out.print(resbmp[h*nw+w]==1?"#":" "/*resbmp[h*nw+w]*/);
+                }
+
+            //java.lang.System.out.println("\n");
+        }
+            
         return res;
     }
     
