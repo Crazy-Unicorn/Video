@@ -106,6 +106,29 @@ public class MainFrame extends javax.swing.JFrame {
         net.init();
         net.learn();
         
+        
+        /*int[][] figure = new int[5][5];
+        for (int i=0; i<5; i++)
+            for (int j=0; j<5; j++)
+                figure[i][j]=-1;
+        
+        figure[1][3]=1;*/
+        
+        int[][] figure = {
+                            {-1, -1, -1, -1, -1}, 
+                            {-1, -1, -1, -1, -1},
+                            {-1, -1, -1, -1, -1},
+                            {-1, -1, -1, -1, -1},
+                            {-1, -1, -1, -1, -1}};
+        
+        figure = net.identify(figure);
+        
+        for (int i=0; i<5; i++) {
+            java.lang.System.out.println();
+            for (int j=0; j<5; j++)
+                java.lang.System.out.print(figure[i][j]>=0?"+"+figure[i][j]+" ":figure[i][j]+" ");
+        }
+        
         /*int[][] test_fig = new int[7][7];
         for (int i=0; i<7; i++)
             for (int j=0; j<7; j++)

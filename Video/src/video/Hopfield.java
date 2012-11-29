@@ -125,6 +125,13 @@ public class Hopfield {
                         net[i][j] += ex[i] * ex[j];
                     }
                 }
+        
+        /*for (int i = 0; i < count; i++) 
+            for (int j = 0; j < count; j++) {
+                if (j==0)
+                    java.lang.System.out.println();
+                java.lang.System.out.print(net[i][j]>=0?"+"+net[i][j]+" ":net[i][j]+" ");
+            }*/
     }
     
     public void identify_old(int[] figure) {
@@ -173,7 +180,7 @@ public class Hopfield {
                             sum += net[whs+js][wh+j] * figure[is][js];
                     }
                     if (sum * figure[i][j] < 0) {
-                        java.lang.System.out.print("\nchanged "+i+" "+j+" "+sum+" "+figure[i][j]);                        
+                        //java.lang.System.out.print("\nchanged "+i+" "+j+" "+sum+" "+(figure[i][j]>=0?"+"+figure[i][j]:figure[i][j]));                        
                         figure[i][j] = -figure[i][j];
                         changed = true;
                         break F;

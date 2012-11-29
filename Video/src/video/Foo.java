@@ -258,6 +258,7 @@ public class Foo {
                     }
                     catch (InterruptedException e)
                     {
+                        java.lang.System.out.println("InterruptedException!");
                     // we might get this when the user closes the dialog box, so
                     // just return from the method.
                     return;
@@ -461,6 +462,7 @@ public class Foo {
                                 try {
                                     Thread.sleep(millisecondsToSleep);
                                 } catch (InterruptedException e) {
+                                    java.lang.System.out.println("InterruptedException2");
                                     return;
                                 }
                             }
@@ -829,7 +831,7 @@ public class Foo {
                     if (typePorog==1) {
                         if (value==255) {
                             backgrpixcount++;
-                            bitmap[i][j]=0;
+                            bitmap[i][j]=-1;
                         } else bitmap[i][j]=1;
                         g2.setColor(new Color(value,value,value));   
                     } else if (typePorog==2) {
@@ -875,14 +877,35 @@ public class Foo {
                     if (w>0)
                         java.lang.System.out.print(".");
                     java.lang.System.out.print(bitmap[w][h]==1?"#":" ");
-                }*/
+                }
             
+            java.lang.System.out.print("\n\nФильтр");*/
+            //java.lang.System.out.print("\n\n");
+            try {
+                bitmap = binfilter(bitmap, width, height);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+            for (int h=0; h<height; h++) 
+                for (int w=0; w<width; w++) {
+                    if (w==0)
+                        java.lang.System.out.println();
+                    if (w>0)
+                        java.lang.System.out.print(".");
+                    java.lang.System.out.print(bitmap[w][h]==1?"#":" ");
+                }
             /*int[][] resbmp = net.resize(bitmap, width, height);
+                    / *{
+                            {-1, -1, -1, -1, -1}, 
+                            {-1, -1, -1, -1, -1},
+                            {-1, -1, -1, -1, -1},
+                            {-1, -1, -1, -1, -1},
+                            {-1, -1, -1, -1, -1}};* /
             
             int nw = net.getWidth();
             int nh = net.getHeight();
             
-            java.lang.System.out.print("\n\nДо");
+            java.lang.System.out.print("\n\n\nДо");
             
             for (int h=0; h<nh; h++)
                 for (int w=0; w<nw; w++) {
@@ -890,7 +913,7 @@ public class Foo {
                         java.lang.System.out.println();
                     if (w>0)
                         java.lang.System.out.print(".");
-                    java.lang.System.out.print(resbmp[w][h]==1?"#":" ");
+                    java.lang.System.out.print(resbmp[w][h]>=0?"#":" ");//resbmp[w][h]);//resbmp[w][h]>=0?"#":" ");
                 }
             
             resbmp = net.identify(resbmp);
@@ -903,9 +926,9 @@ public class Foo {
                         java.lang.System.out.println();
                     if (w>0)
                         java.lang.System.out.print(".");
-                    java.lang.System.out.print(resbmp[w][h]==1?"#":" ");
-                }*/
-            
+                    java.lang.System.out.print(resbmp[w][h]>=0?"#":" ");//resbmp[w][h]);//resbmp[w][h]>=0?"#":" ");
+                }
+            */
             /////int[] resbmp = net.resize(bitmap, width, height);
             
             //net.identify(resbmp);
@@ -988,6 +1011,93 @@ public class Foo {
             return 255;
         else
             return 0;
+    }
+    
+    public int[][] binfilter(int[][] pixs, int width, int height) {
+        int[][] t1 = new int[width][height];
+        int[][] t2 = new int[width][height];
+        boolean first = true;
+        boolean changed = true;
+        int sum = 0;
+        
+        for (int t=0; t<width; t++)
+            System.arraycopy(pixs[t], 0, t1[t], 0, height);
+        
+        while (changed) {
+            changed = false;
+            if (first) {
+                first = false;
+                for (int i=0; i<width; i++)
+                    for (int j=0; j<height; j++) {
+                        /*boolean pixnear = false;
+                        if (i>0&&j>0&&i<(width-1)&&j<(width-1)) {
+                            if (t1[i][j]>0) {
+                                if (t1[i-1][j-1]>0 || t1[i-1][j]>0 || t1[i-1][j+1]>0 || t1[i][j-1]>0 || t1[i][j+1]>0 || t1[i+1][j-1]>0 || t1[i+1][j]>0 || t1[i+1][j+1]>0) {
+                                    t2[i][j]=t1[i][j];
+                                }
+                            } else
+                                t2[i][j]=t1[i][j];
+                        }*/
+                        sum = 0;
+                        for (int q=-1; q<2; q++)
+                            for (int r=-1; r<2; r++)
+                                try {
+                                    sum += t1[i+q][j+r];
+                                } catch (Exception e) {}
+                        if (sum>0) {
+                            t2[i][j] = 1;
+                            if (t1[i][j]!=t2[i][j])
+                                changed=true;
+                        }
+                        if (sum<0) {
+                            t2[i][j] = -1;
+                            if (t1[i][j]!=t2[i][j])
+                                changed=true;                            
+                        }
+                        if (sum==0)
+                            if (t1[i][j]>=0)
+                                t2[i][j] = 1;
+                            else
+                                t2[i][j] = -1;
+                    }
+                if (changed==false)
+                    return t1;
+            } else {
+                first = true;
+                
+                for (int i=0; i<width; i++)
+                    for (int j=0; j<height; j++) {
+
+                        sum = 0;
+                        for (int q=-1; q<2; q++)
+                            for (int r=-1; r<2; r++)
+                                try {
+                                    sum += t2[i+q][j+r];
+                                } catch (Exception e) {/*java.lang.System.out.println("exce");*/
+                                }
+                        if (sum>0) {
+                            t1[i][j] = 1;
+                            if (t2[i][j]!=t1[i][j])
+                                changed=true;
+                        }
+                        if (sum<0) {
+                            t1[i][j] = -1;
+                            if (t2[i][j]!=t1[i][j])
+                                changed=true;                            
+                        }
+                        if (sum==0)
+                            if (t2[i][j]>=0)
+                                t1[i][j] = 1;
+                            else
+                                t1[i][j] = -1;
+                    }
+                
+                if (changed==false)
+                    return t2;
+            }
+            System.out.println(1);
+        }
+        return pixs;
     }
     
     /*
