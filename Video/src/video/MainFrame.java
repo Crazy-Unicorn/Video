@@ -80,6 +80,18 @@ public class MainFrame extends javax.swing.JFrame {
     public double getSmenFonLimValue() {
         return Double.parseDouble(smenFonLimit.getText());
     }
+
+    public double getFpsValue() {
+        return Integer.parseInt(fps.getText());
+    }
+    
+    public double getFramesCountValue() {
+        return Integer.parseInt(framesCount.getText());
+    }
+    
+    public double getColorLimitValue() {
+        return Integer.parseInt(colorLimit.getText());
+    }
     
     public JTextField getSmenFonLim() {
         return smenFonLimit;
@@ -90,9 +102,68 @@ public class MainFrame extends javax.swing.JFrame {
      */
     public MainFrame() {
         initComponents();
-        net = new Hopfield(100, 50);
-        //net.init();
-        //net.learn();
+        net = new Hopfield(5, 5);
+        net.init();
+        net.learn();
+        
+        /*int[][] test_fig = new int[7][7];
+        for (int i=0; i<7; i++)
+            for (int j=0; j<7; j++)
+                test_fig[i][j] = -1;
+        test_fig[1][1] = 1;
+        test_fig[2][2] = 1;
+        test_fig[3][3] = 1;
+        test_fig[4][4] = 1;
+        test_fig[5][5] = 1;
+        test_fig[6][6] = 1;
+        test_fig[1][1] = 1;
+        test_fig[3][4] = 1;
+        test_fig[4][3] = 1;
+        test_fig[4][1] = 1;
+        
+        java.lang.System.out.println(net.getWidth()+" "+net.getHeight());
+        
+        java.lang.System.out.println("\nИзначально");
+        
+        for (int i=0; i<7; i++) {
+            for (int j=0; j<7; j++) {
+                //java.lang.System.out.println(i+" "+j);
+                if (j==0)
+                    java.lang.System.out.println();
+                if (j>0)
+                    java.lang.System.out.print(".");
+                java.lang.System.out.print(test_fig[i][j]==1?"#":"_");
+            }
+        }
+        
+        int[][] res = net.resize(test_fig, 7, 7);
+        
+        java.lang.System.out.println("\n\n\nДо трансформации");
+        
+        for (int i=0; i<net.getWidth(); i++) {
+            for (int j=0; j<net.getHeight(); j++) {
+                if (j==0)
+                    java.lang.System.out.println();
+                if (j>0)
+                    java.lang.System.out.print(".");
+                java.lang.System.out.print(res[i][j]==1?"#":"_");
+            }
+        }
+        
+        res = net.identify(res);
+        
+        java.lang.System.out.println("\n\n\nПосле трансформации");
+        
+        for (int i=0; i<net.getWidth(); i++) {
+            for (int j=0; j<net.getHeight(); j++) {
+                if (j==0)
+                    java.lang.System.out.println();
+                if (j>0)
+                    java.lang.System.out.print(".");
+                java.lang.System.out.print(res[i][j]==1?"#":"_");
+            }
+        }*/
+        //net.test_old();
         //net.test();
         buttonGroup.add(rbuttonFonModel);
         buttonGroup.add(rbuttonPorogBit);
@@ -213,7 +284,6 @@ public class MainFrame extends javax.swing.JFrame {
         );
 
         fps.setText("1");
-        fps.setEnabled(false);
 
         fpsMinus.setText("-");
         fpsMinus.addActionListener(new java.awt.event.ActionListener() {
@@ -237,7 +307,6 @@ public class MainFrame extends javax.swing.JFrame {
         });
 
         framesCount.setText("50");
-        framesCount.setEnabled(false);
 
         fcPlus.setText("+");
         fcPlus.addActionListener(new java.awt.event.ActionListener() {
@@ -251,7 +320,6 @@ public class MainFrame extends javax.swing.JFrame {
         jLabel2.setText("всего");
 
         colorLimit.setText("30");
-        colorLimit.setEnabled(false);
 
         colLimPlus.setText("+");
         colLimPlus.addActionListener(new java.awt.event.ActionListener() {
@@ -448,53 +516,18 @@ public class MainFrame extends javax.swing.JFrame {
                 loadingLabel.setText("Файл подходит для обработки");
                 buttonStart.setEnabled(true);
                 buttonSimpleView.setEnabled(true);
-                /*FileInputStream fis;
-                if (chooser.getSelectedFile().getName().toLowerCase().endsWith(".xml"))
-                    fis = new FileInputStream(chooser.getSelectedFile().getPath());
-                else fis = new FileInputStream(chooser.getSelectedFile().getPath()+".xml");
-
-		BufferedInputStream bis = new BufferedInputStream(fis);
-		XMLDecoder xmlDecoder = new XMLDecoder(bis);
-
-                try {
-                    Point mb1 = (Point)xmlDecoder.readObject();
-                    redactorPanel.getModel().setStartPoint(mb1);
-                    Point mb2 = (Point) xmlDecoder.readObject();
-                    redactorPanel.getModel().setFinalPoint(mb2);
-                    Integer mb3 = (Integer)xmlDecoder.readObject();
-                    redactorPanel.getModel().setSelectedFigureIndex(mb3);
-                    Color mb4 = (Color)xmlDecoder.readObject();
-                    redactorPanel.getModel().setSelectedFigureColor(mb4);
-                    ArrayList<ColouredFigure> mb5 = (ArrayList<ColouredFigure>) xmlDecoder.readObject();
-                    redactorPanel.getModel().setColFigures(mb5);
-                    Color mb6 = (Color) xmlDecoder.readObject();
-                    redactorPanel.getModel().setNewFiguresColor(mb6);
-                    xmlDecoder.close();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(this, "Ошибка при чтении файла!",
-                        "Ошибка", JOptionPane.ERROR_MESSAGE);
-                    return;
-                } finally {
-                    xmlDecoder.close();
-                    //redactorPanel.repaint();
-                }*/
-            /*} catch (FileNotFoundException e) {
-                JOptionPane.showMessageDialog(this, "Файл не найден!",
-                    "Ошибка", JOptionPane.ERROR_MESSAGE);                
-                return; 
-            }*/
             } catch (Exception e) {
                 loadingLabel.setText("Ошибка формата файла");
                 buttonStart.setEnabled(false);
                 buttonSimpleView.setEnabled(false);
                 JOptionPane.showMessageDialog(this, e.getMessage(),
                     "Ошибка", JOptionPane.ERROR_MESSAGE); 
-            } /*finally {
-                loadingLabel.setText("Ошибка формата файла");
-            }*/
+            }
         } else {
             loadingLabel.setText("");
         }
+        //net.test_old();
+        //net.test();
     }//GEN-LAST:event_buttonFileChooserActionPerformed
 
     private void buttonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStartActionPerformed

@@ -7,9 +7,7 @@ package video;
 import com.sun.jndi.toolkit.ctx.HeadTail;
 import com.xuggle.xuggler.*;
 import com.xuggle.xuggler.demos.VideoImage;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
@@ -542,7 +540,7 @@ public class Foo {
     
     ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
     
-    public Color getColor(BufferedImage img, int x, int y) {
+    public static Color getColor(BufferedImage img, int x, int y) {
 
       Raster raster = img.getRaster();
       ColorModel model = img.getColorModel();
@@ -739,7 +737,7 @@ public class Foo {
         Graphics2D g2 = res.createGraphics();
         
         int[][] bitmap = null;
-        if (typePorog==1)
+        /*if (typePorog==1)
             bitmap = new int[height][width];
         
         if (simple) {
@@ -776,7 +774,70 @@ public class Foo {
                             backgrpixcount++;
                             g2.setColor(new Color(value,value,value));
                         } else
-                            g2.setColor(cOrig/*new Color(cOrig.getRed(),cOrig.getGreen(),cOrig.getBlue())*/);
+                            g2.setColor(cOrig);
+                    } else if (typePorog==3) {
+                        if (value==255) {
+                            backgrpixcount++;
+                            g2.setColor(new Color(value,value,value));
+                        } else {
+                            int grey = (int)(cOrig.getRed()*0.299 + cOrig.getGreen()*0.587 + cOrig.getBlue()*0.114);
+                            //Color grey = new Color()
+                            g2.setColor(new Color(grey,grey,grey));
+                        }
+                    }
+                    
+                    g2.drawLine(i, j, i, j);   
+                }
+            
+            if (smenFon)
+                if (pixcount/(backgrpixcount+1)>smenFonLim) {//3) {
+                    images = new ArrayList<BufferedImage>();
+                    //images.add(original);
+                    rgb = null;
+                    //getProcessedResult(original, 1, 10);
+                    //res = 
+                    throw new RuntimeException("forgetOldBackground");
+                }
+        }*/
+        
+        if (typePorog==1)
+            bitmap = new int[width][height];
+        
+        if (simple) {
+            for (int i=0; i<width; i++)
+                for (int j=0; j<height; j++) {
+                    Color cOrig = getColor(original, i, j);
+                    Color cCut = getColor(cutter, i, j);
+                    int r = Math.abs(cOrig.getRed()-cCut.getRed());
+                    int g = Math.abs(cOrig.getGreen()-cCut.getGreen());
+                    int b = Math.abs(cOrig.getBlue()-cCut.getBlue());
+                    g2.setColor(new Color(r,g,b));
+                    g2.drawLine(i, j, i, j);                
+                }
+        } else {
+            //int limit = 80;
+            int pixcount = width*height;
+            int backgrpixcount = 0;
+            for (int i=0; i<width; i++)
+                for (int j=0; j<height; j++) {
+                    Color cOrig = getColor(original, i, j);
+                    Color cCut = getColor(cutter, i, j);
+                    int value = Math.abs(cOrig.getRed()-cCut.getRed())+Math.abs(cOrig.getGreen()-cCut.getGreen())+Math.abs(cOrig.getBlue()-cCut.getBlue());
+                    value = colorToBin(value, limit);
+                    
+                    //if (toBit) {
+                    if (typePorog==1) {
+                        if (value==255) {
+                            backgrpixcount++;
+                            bitmap[i][j]=0;
+                        } else bitmap[i][j]=1;
+                        g2.setColor(new Color(value,value,value));   
+                    } else if (typePorog==2) {
+                        if (value==255) {
+                            backgrpixcount++;
+                            g2.setColor(new Color(value,value,value));
+                        } else
+                            g2.setColor(cOrig);
                     } else if (typePorog==3) {
                         if (value==255) {
                             backgrpixcount++;
@@ -804,7 +865,48 @@ public class Foo {
         
         if (net!=null && typePorog==1) {
 
-            int[] resbmp = net.resize(bitmap, width, height);
+            
+            /*java.lang.System.out.print("\n\nДоДо");
+            
+            for (int h=0; h<height; h++) 
+                for (int w=0; w<width; w++) {
+                    if (w==0)
+                        java.lang.System.out.println();
+                    if (w>0)
+                        java.lang.System.out.print(".");
+                    java.lang.System.out.print(bitmap[w][h]==1?"#":" ");
+                }*/
+            
+            /*int[][] resbmp = net.resize(bitmap, width, height);
+            
+            int nw = net.getWidth();
+            int nh = net.getHeight();
+            
+            java.lang.System.out.print("\n\nДо");
+            
+            for (int h=0; h<nh; h++)
+                for (int w=0; w<nw; w++) {
+                    if (w==0)
+                        java.lang.System.out.println();
+                    if (w>0)
+                        java.lang.System.out.print(".");
+                    java.lang.System.out.print(resbmp[w][h]==1?"#":" ");
+                }
+            
+            resbmp = net.identify(resbmp);
+            
+            java.lang.System.out.print("\n\nПосле");
+            
+            for (int h=0; h<nh; h++)
+                for (int w=0; w<nw; w++) {
+                    if (w==0)
+                        java.lang.System.out.println();
+                    if (w>0)
+                        java.lang.System.out.print(".");
+                    java.lang.System.out.print(resbmp[w][h]==1?"#":" ");
+                }*/
+            
+            /////int[] resbmp = net.resize(bitmap, width, height);
             
             //net.identify(resbmp);
             
@@ -819,7 +921,7 @@ public class Foo {
                     java.lang.System.out.print(bitmap[h][w]==1?"#":bitmap[h][w]);
                 }
             }*/
-            java.lang.System.out.println("\n\nПосле трансформации");
+            /*java.lang.System.out.println("\n\nПосле трансформации");
 
             int nw = net.getWidth();
             int nh = net.getHeight();
@@ -830,8 +932,8 @@ public class Foo {
                         java.lang.System.out.println();
                     if (w>0)
                         java.lang.System.out.print(".");
-                    java.lang.System.out.print(resbmp[h*nw+w]==1?"#":" "/*resbmp[h*nw+w]*/);
-                }
+                    java.lang.System.out.print(resbmp[h*nw+w]==1?"#":" ");
+                }*/
 
             //java.lang.System.out.println("\n");
         }
@@ -842,7 +944,7 @@ public class Foo {
     public BufferedImage getShineFon(BufferedImage original, BufferedImage cutter, boolean simple, int limit) {
         int width = original.getWidth();
         int height = original.getHeight();
-        
+
         BufferedImage res = new BufferedImage(width,
             height, BufferedImage.TYPE_INT_ARGB);
         
