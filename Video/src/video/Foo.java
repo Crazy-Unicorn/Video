@@ -1020,11 +1020,18 @@ public class Foo {
         boolean changed = true;
         int sum = 0;
         
+        boolean collision = false;
+        
         for (int t=0; t<width; t++)
             System.arraycopy(pixs[t], 0, t1[t], 0, height);
         
+        int a=0;
+        
         while (changed) {
             changed = false;
+            a++;
+            if (a>20)
+                collision = true;
             if (first) {
                 first = false;
                 for (int i=0; i<width; i++)
@@ -1043,22 +1050,30 @@ public class Foo {
                             for (int r=-1; r<2; r++)
                                 try {
                                     sum += t1[i+q][j+r];
+                                    if (collision==true)
+                                        if (q==0&&r==0)
+                                            sum += t1[i][j];
                                 } catch (Exception e) {}
                         if (sum>0) {
                             t2[i][j] = 1;
-                            if (t1[i][j]!=t2[i][j])
+                            if (t1[i][j]!=t2[i][j]) {
                                 changed=true;
+                                //System.out.println(1+" "+i+" "+j);
+                            }
                         }
                         if (sum<0) {
                             t2[i][j] = -1;
-                            if (t1[i][j]!=t2[i][j])
-                                changed=true;                            
+                            if (t1[i][j]!=t2[i][j]) {
+                                changed=true;        
+                                //System.out.println(2+" "+i+" "+j);
+                            }
                         }
                         if (sum==0)
-                            if (t1[i][j]>=0)
+                            /*if (t1[i][j]>=0)
                                 t2[i][j] = 1;
                             else
-                                t2[i][j] = -1;
+                                t2[i][j] = -1;*/
+                            t2[i][j] = t1[i][j];
                     }
                 if (changed==false)
                     return t1;
@@ -1073,29 +1088,45 @@ public class Foo {
                             for (int r=-1; r<2; r++)
                                 try {
                                     sum += t2[i+q][j+r];
-                                } catch (Exception e) {/*java.lang.System.out.println("exce");*/
-                                }
+                                    if (collision==true)
+                                        if (q==0&&r==0)
+                                            sum += t2[i][j];                                    
+                                } catch (Exception e) {/*java.lang.System.out.println("exce");*/}
                         if (sum>0) {
                             t1[i][j] = 1;
-                            if (t2[i][j]!=t1[i][j])
+                            if (t2[i][j]!=t1[i][j]) {
                                 changed=true;
+                                //System.out.println(3+" "+i+" "+j);
+                            }
                         }
                         if (sum<0) {
                             t1[i][j] = -1;
-                            if (t2[i][j]!=t1[i][j])
-                                changed=true;                            
+                            if (t2[i][j]!=t1[i][j]) {
+                                changed=true;
+                                //System.out.println(4+" "+i+" "+j);
+                            }
                         }
                         if (sum==0)
-                            if (t2[i][j]>=0)
+                            /*if (t2[i][j]>=0)
                                 t1[i][j] = 1;
                             else
-                                t1[i][j] = -1;
+                                t1[i][j] = -1;*/
+                            t1[i][j] = t2[i][j];
                     }
                 
                 if (changed==false)
                     return t2;
             }
-            System.out.println(1);
+            //System.out.println(1);
+            /*if (a>10) {
+                System.out.println("3x3: ");
+                for (int i=0; i<5; i++) {
+                    System.out.println();
+                    for (int j=0; j<5; j++)
+                        System.out.print((t1[165+j][75+i]>=0?"+":"")+t1[165+j][75+i]+" ");
+                }
+                //System.out.println("3x3 = "+t1[166][76]+" "+t1[167][76]+" "+t1[168][76]+" "+t1[166][77]+" "+t1[167][77]+" "+t1[168][77]+" "+t1[166][78]+" "+t1[167][78]+" "+t1[168][78]+" ");
+            }*/
         }
         return pixs;
     }

@@ -192,7 +192,8 @@ public class MainFrame extends javax.swing.JFrame {
         buttonGroup.add(rbuttonPorogBit);
         buttonGroup.add(rbuttonPorogColor);
         buttonGroup.add(rbuttonPorogGrey);
-        rbuttonFonModel.setSelected(true);
+        //rbuttonFonModel.setSelected(true);
+        rbuttonPorogBit.setSelected(true);
         model.setNet(net);
     }
 
