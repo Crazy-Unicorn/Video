@@ -739,6 +739,7 @@ public class Foo {
         Graphics2D g2 = res.createGraphics();
         
         int[][] bitmap = null;
+        int[][] raskras = null;
         /*if (typePorog==1)
             bitmap = new int[height][width];
         
@@ -881,19 +882,31 @@ public class Foo {
             
             java.lang.System.out.print("\n\nФильтр");*/
             //java.lang.System.out.print("\n\n");
+            //java.lang.System.out.println(bitmap[0].length);
             try {
-                bitmap = binfilter(bitmap, width, height);
+                bitmap = binfilter(bitmap);
+                raskras = identify(bitmap);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
-            for (int h=0; h<height; h++) 
+            /*for (int h=0; h<height; h++) 
                 for (int w=0; w<width; w++) {
                     if (w==0)
                         java.lang.System.out.println();
                     if (w>0)
                         java.lang.System.out.print(".");
                     java.lang.System.out.print(bitmap[w][h]==1?"#":" ");
+                }*/
+            java.lang.System.out.println();java.lang.System.out.println();
+            for (int h=0; h<height; h++) 
+                for (int w=0; w<width; w++) {
+                    if (w==0)
+                        java.lang.System.out.println();
+                    if (w>0)
+                        java.lang.System.out.print(".");
+                    java.lang.System.out.print(raskras[w][h]+" ");
                 }
+            
             /*int[][] resbmp = net.resize(bitmap, width, height);
                     / *{
                             {-1, -1, -1, -1, -1}, 
@@ -1013,7 +1026,11 @@ public class Foo {
             return 0;
     }
     
-    public int[][] binfilter(int[][] pixs, int width, int height) {
+    public int[][] binfilter(int[][] pixs) {
+        int width = pixs.length;
+        if (width == 0)
+            throw new RuntimeException("binfilter width==0");
+        int height = pixs[0].length;
         int[][] t1 = new int[width][height];
         int[][] t2 = new int[width][height];
         boolean first = true;
@@ -1036,15 +1053,6 @@ public class Foo {
                 first = false;
                 for (int i=0; i<width; i++)
                     for (int j=0; j<height; j++) {
-                        /*boolean pixnear = false;
-                        if (i>0&&j>0&&i<(width-1)&&j<(width-1)) {
-                            if (t1[i][j]>0) {
-                                if (t1[i-1][j-1]>0 || t1[i-1][j]>0 || t1[i-1][j+1]>0 || t1[i][j-1]>0 || t1[i][j+1]>0 || t1[i+1][j-1]>0 || t1[i+1][j]>0 || t1[i+1][j+1]>0) {
-                                    t2[i][j]=t1[i][j];
-                                }
-                            } else
-                                t2[i][j]=t1[i][j];
-                        }*/
                         sum = 0;
                         for (int q=-1; q<2; q++)
                             for (int r=-1; r<2; r++)
@@ -1058,21 +1066,15 @@ public class Foo {
                             t2[i][j] = 1;
                             if (t1[i][j]!=t2[i][j]) {
                                 changed=true;
-                                //System.out.println(1+" "+i+" "+j);
                             }
                         }
                         if (sum<0) {
                             t2[i][j] = -1;
                             if (t1[i][j]!=t2[i][j]) {
                                 changed=true;        
-                                //System.out.println(2+" "+i+" "+j);
                             }
                         }
                         if (sum==0)
-                            /*if (t1[i][j]>=0)
-                                t2[i][j] = 1;
-                            else
-                                t2[i][j] = -1;*/
                             t2[i][j] = t1[i][j];
                     }
                 if (changed==false)
@@ -1091,44 +1093,99 @@ public class Foo {
                                     if (collision==true)
                                         if (q==0&&r==0)
                                             sum += t2[i][j];                                    
-                                } catch (Exception e) {/*java.lang.System.out.println("exce");*/}
+                                } catch (Exception e) {}
                         if (sum>0) {
                             t1[i][j] = 1;
                             if (t2[i][j]!=t1[i][j]) {
                                 changed=true;
-                                //System.out.println(3+" "+i+" "+j);
                             }
                         }
                         if (sum<0) {
                             t1[i][j] = -1;
                             if (t2[i][j]!=t1[i][j]) {
                                 changed=true;
-                                //System.out.println(4+" "+i+" "+j);
                             }
                         }
                         if (sum==0)
-                            /*if (t2[i][j]>=0)
-                                t1[i][j] = 1;
-                            else
-                                t1[i][j] = -1;*/
                             t1[i][j] = t2[i][j];
                     }
                 
                 if (changed==false)
                     return t2;
             }
-            //System.out.println(1);
-            /*if (a>10) {
-                System.out.println("3x3: ");
-                for (int i=0; i<5; i++) {
-                    System.out.println();
-                    for (int j=0; j<5; j++)
-                        System.out.print((t1[165+j][75+i]>=0?"+":"")+t1[165+j][75+i]+" ");
-                }
-                //System.out.println("3x3 = "+t1[166][76]+" "+t1[167][76]+" "+t1[168][76]+" "+t1[166][77]+" "+t1[167][77]+" "+t1[168][77]+" "+t1[166][78]+" "+t1[167][78]+" "+t1[168][78]+" ");
-            }*/
         }
         return pixs;
+    }
+    
+    private int[][] raskras = null;
+
+    ArrayList<int[][]> objects = null;
+    
+    private int raskrasId;
+    
+    public int[][] identify(int[][] pixs) {
+        int width = pixs.length;
+        if (width == 0)
+            throw new RuntimeException("binfilter width==0");
+        int height = pixs[0].length;
+        
+        raskras = new int[width][height];
+        objects = new ArrayList<int[][]>();
+
+        raskrasId = 1;
+        
+        for (int i=0; i<width; i++)
+            for (int j=0; j<height; j++)
+                raskras[i][j] = pixs[i][j]<0?0:1;
+        
+        for (int j=0; j<height; j++)
+            for (int i=0; i<width; i++)
+                //if (ident_rekurs(i, j, objId)>0)
+                //    objId++;
+                ident_rekurs_start(i, j, width, height);
+        
+        return raskras;
+    }
+    
+    private void ident_rekurs_start(int x, int y, int width, int height) {
+        if (raskras[x][y]==1)
+            raskrasId++;
+        ident_rekurs(x, y, width, height);
+    }
+    
+    private void ident_rekurs(int x, int y, int width, int height) {
+        /*if (raskras[x][y]>1) {
+            System.out.println("\n\n>1\n\n");
+            return;
+        }
+        if (raskras[x][y]==0)
+            return;// 0;*/
+        if (raskras[x][y]>1||raskras[x][y]==0)
+            return;// 0;
+        raskras[x][y] = raskrasId;
+        /*if (x>0)
+            ident_rekurs(x-1,y, width, height);
+        if (y>0)
+            ident_rekurs(x,y-1, width, height);
+        if (x>0&&y>0)
+            ident_rekurs(x-1,y-1, width, height);
+        if (x<width-1)
+            ident_rekurs(x+1,y, width, height);
+        if (y<height-1)
+            ident_rekurs(x,y+1, width, height);
+        if (x<width-1&&y<height-1)
+            ident_rekurs(x+1,y+1, width, height);
+        if (x>0&&y<height-1)
+            ident_rekurs(x-1,y+1, width, height);
+        if (x<width-1&&y>0)
+            ident_rekurs(x+1,y-1, width, height);*/
+        for (int i=-1; i<2; i++)
+            for (int j=-1; j<2; j++)
+                if (i!=0&&j!=0)
+                    try {
+                        ident_rekurs(x+i,y+j, width, height);
+                    } catch (Exception e) {}
+        return;// 1;
     }
     
     /*
