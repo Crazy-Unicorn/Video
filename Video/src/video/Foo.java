@@ -323,6 +323,7 @@ public class Foo {
         boolean porogBit = frame.isSelectedRButtonPorogBit();
         boolean porogColor = frame.isSelectedRButtonPorogColor();
         boolean porogGrey = frame.isSelectedRButtonPorogGrey();
+        boolean porogColorSubstr = frame.isSelectedRButtonPorogColorSubstr();
         boolean smenFon = frame.isSelectedSmenFon();
         
         double smenFonLim = 2;
@@ -341,6 +342,8 @@ public class Foo {
             type = 2;
         if (porogGrey)
             type = 3;
+        if (porogColorSubstr)
+            type = 4;
         //java.lang.System.out.println(smenFon);
         
         if (this.file == null) {
@@ -492,12 +495,10 @@ public class Foo {
                         }
                         imgNumber++;*/
 
-                        //try {
                             BufferedImage processedResult = getProcessedResult(javaImage, each, framesCount, colorlimit, smenFon, smenFonLim);
 
                             try {
-                            //BufferedImage cutFon = getCutFon(javaImage, processedResult, false, colorlimit);
-                                //if (porogBit||porogColor)
+
                                 if (type>0)
                                     processedResult = getCutFon(javaImage, processedResult, false, colorlimit, type, smenFon, smenFonLim);
                             //processedResult = getShineFon(javaImage, processedResult, false, colorlimit);
@@ -508,13 +509,9 @@ public class Foo {
                                 if (!e.getMessage().equals("forgetOldBackground"))
                                     throw e;
                             }
-                        /*} catch (RuntimeException e) {
-                            if (!e.getMessage().equals("empty")) {
-                                java.lang.System.out.println("err!");
-                            }
-                        }*/
+
                         post = System.currentTimeMillis();
-                        /////java.lang.System.out.println(post-pre);
+                        java.lang.System.out.println(post-pre);
                         //java.lang.System.out.println((post-pre)+" processed");
                     }
                 }
@@ -552,10 +549,33 @@ public class Foo {
       return new Color(argb, true);
     }
     
+    public static Object[] getAllRasterAndColorModel(BufferedImage img) {
+
+      Raster raster = img.getRaster();
+      ColorModel model = img.getColorModel();
+      //Object data = raster.getDataElements(x, y, null);
+      //int argb = model.getRGB(data);
+      
+      return new Object[] {raster, model};
+    }
+
+    public static Color getColorFromRaster(Raster raster, ColorModel model, int x, int y) {
+
+      Object data = raster.getDataElements(x, y, null);
+      int argb = model.getRGB(data);
+      
+      return new Color(argb, true);
+    }
+    
     private long[][][] rgb = null;
     
     public BufferedImage getProcessedResult(BufferedImage image, int each, int framesCount, int limit, boolean smenFon, double smenFonLim) {
 
+        Object[] rasterNmodel = getAllRasterAndColorModel(image);
+        
+        Raster raster = (Raster)rasterNmodel[0];
+        ColorModel model = (ColorModel)rasterNmodel[1];
+        
         int width = image.getWidth();
         int height = image.getHeight();
         if (rgb==null) {
@@ -570,7 +590,7 @@ public class Foo {
             if (images.size()<framesCount) {
                 for (int i=0; i<width; i++)
                     for (int j=0; j<height; j++) {
-                        Color color = getColor(image,i,j);
+                        Color color = getColorFromRaster(raster, model, i, j);//getColor(image,i,j);
                         rgb[i][j][0] += color.getRed();
                         rgb[i][j][1] += color.getGreen();
                         rgb[i][j][2] += color.getBlue();
@@ -580,16 +600,20 @@ public class Foo {
             } else {
                 //java.lang.System.out.println("Nsize = "+images.size()+"  UPDpos = "+((int)((imgNumber/each)%framesCount)));
                 BufferedImage oldImage = images.get((int)((imgNumber/each)%framesCount));
+                Object[] oldrasterNmodel = getAllRasterAndColorModel(oldImage);
+
+                Raster oldraster = (Raster)oldrasterNmodel[0];
+                ColorModel oldmodel = (ColorModel)oldrasterNmodel[1];                
                 for (int i=0; i<width; i++)
                     for (int j=0; j<height; j++) {
-                        Color color = getColor(oldImage,i,j);
+                        Color color = getColorFromRaster(oldraster, oldmodel, i, j);//getColor(oldImage,i,j);
                         rgb[i][j][0] -= color.getRed();
                         rgb[i][j][1] -= color.getGreen();
                         rgb[i][j][2] -= color.getBlue();
                     }
                 for (int i=0; i<width; i++)
                     for (int j=0; j<height; j++) {
-                        Color color = getColor(image,i,j);
+                        Color color = getColorFromRaster(raster, model, i, j);//getColor(image,i,j);
                         rgb[i][j][0] += color.getRed();
                         rgb[i][j][1] += color.getGreen();
                         rgb[i][j][2] += color.getBlue();
@@ -653,7 +677,7 @@ public class Foo {
                 g2.setColor(new Color(r,g,b));
                 g2.drawLine(i, j, i, j);
                 
-                Color oldCol = getColor(image, i, j);
+                Color oldCol = getColorFromRaster(raster, model, i, j);//getColor(image, i, j);
                 or = oldCol.getRed();
                 og = oldCol.getGreen();
                 ob = oldCol.getBlue();
@@ -739,7 +763,7 @@ public class Foo {
         Graphics2D g2 = res.createGraphics();
         
         int[][] bitmap = null;
-        int[][] raskras = null;
+        //int[][] raskras = null;
         /*if (typePorog==1)
             bitmap = new int[height][width];
         
@@ -850,6 +874,12 @@ public class Foo {
                             //Color grey = new Color()
                             g2.setColor(new Color(grey,grey,grey));
                         }
+                    } else if (typePorog==4) {
+                        if (value==255) {
+                            backgrpixcount++;
+                            g2.setColor(new Color(value,value,value));
+                        } else
+                            g2.setColor(new Color(Math.abs(cOrig.getRed()-cCut.getRed()),Math.abs(cOrig.getGreen()-cCut.getGreen()),Math.abs(cOrig.getBlue()-cCut.getBlue())));
                     }
                     
                     g2.drawLine(i, j, i, j);   
@@ -897,16 +927,16 @@ public class Foo {
                         java.lang.System.out.print(".");
                     java.lang.System.out.print(bitmap[w][h]==1?"#":" ");
                 }*/
-            java.lang.System.out.println();java.lang.System.out.println();
+            /*java.lang.System.out.println();java.lang.System.out.println();
             for (int h=0; h<height; h++) 
                 for (int w=0; w<width; w++) {
                     if (w==0)
                         java.lang.System.out.println();
                     if (w>0)
                         java.lang.System.out.print(".");
-                    java.lang.System.out.print(raskras[w][h]+" ");
-                }
-            
+                    java.lang.System.out.print((raskras[w][h]==0?" ":raskras[w][h])+" ");
+                }////////
+            */
             /*int[][] resbmp = net.resize(bitmap, width, height);
                     / *{
                             {-1, -1, -1, -1, -1}, 
@@ -1044,7 +1074,49 @@ public class Foo {
         
         int a=0;
         
+        int[][] sums = new int[width][height];
+        
+        for (int i=0; i<width; i++)
+            for (int j=0; j<height; j++) {
+                sum = 0;
+                for (int q=-1; q<2; q++)
+                    for (int w=-1; w<2; w++)
+                        try {
+                            sum += pixs[i+q][j+w];
+                        } catch (Exception e) {}
+                sums[i][j] = sum;
+            }
+        
         while (changed) {
+            changed = false;
+            a++;
+            if (a>20)
+                collision = true;
+            if (collision==true)
+                for (int i=0; i<width; i++)
+                    for (int j=0; j<height; j++) {
+                        sums[i][j] += t1[i][j];
+                    }
+            
+            for (int i=0; i<width; i++)
+                for (int j=0; j<height; j++) {
+                    if (sums[i][j]>0)
+                        if (t1[i][j]<0) {
+                            t1[i][j] = 1;
+                            changed = true;
+                        }
+                    if (sums[i][j]<0)
+                        if (t1[i][j]>0) {
+                            t1[i][j] = -1;
+                            changed = true;
+                        }
+                }
+            if (changed==false)
+                return t1;
+            
+        }
+        
+        /*while (changed) {
             changed = false;
             a++;
             if (a>20)
@@ -1113,7 +1185,7 @@ public class Foo {
                 if (changed==false)
                     return t2;
             }
-        }
+        }*/
         return pixs;
     }
     
@@ -1163,29 +1235,60 @@ public class Foo {
         if (raskras[x][y]>1||raskras[x][y]==0)
             return;// 0;
         raskras[x][y] = raskrasId;
-        /*if (x>0)
-            ident_rekurs(x-1,y, width, height);
-        if (y>0)
-            ident_rekurs(x,y-1, width, height);
-        if (x>0&&y>0)
-            ident_rekurs(x-1,y-1, width, height);
-        if (x<width-1)
+        
+        /*if (x<width-1)
             ident_rekurs(x+1,y, width, height);
+        if (x>0)
+            ident_rekurs(x-1,y, width, height);*/
+        
+        if (x>0)
+            if (raskras[x-1][y]==1) {
+                //System.out.println("\nx-1, y x="+x+" y="+y+"\n");
+                ident_rekurs(x-1,y, width, height);
+            }
+        if (y>0)
+            if (raskras[x][y-1]==1) {
+                //System.out.println("\nx, y-1 x="+x+" y="+y+"\n");
+                ident_rekurs(x,y-1, width, height);
+            }
+        if (x>0&&y>0)
+            if (raskras[x-1][y-1]==1) {
+                //System.out.println("\nx-1,y-1 x="+x+" y="+y+"\n");
+                ident_rekurs(x-1,y-1, width, height);
+            }
+        if (x<width-1)
+            if (raskras[x+1][y]==1) {
+                //System.out.println("\nx+1,y x="+x+" y="+y+"\n");
+                ident_rekurs(x+1,y, width, height);
+            }
         if (y<height-1)
-            ident_rekurs(x,y+1, width, height);
+            if (raskras[x][y+1]==1) {
+                //System.out.println("\nx,y+1 x="+x+" y="+y+"\n");
+                ident_rekurs(x,y+1, width, height);
+            }
         if (x<width-1&&y<height-1)
-            ident_rekurs(x+1,y+1, width, height);
+            if (raskras[x+1][y+1]==1) {
+                //System.out.println("\nx+1,y+1 x="+x+" y="+y+"\n");
+                ident_rekurs(x+1,y+1, width, height);
+            }
         if (x>0&&y<height-1)
-            ident_rekurs(x-1,y+1, width, height);
+            if (raskras[x-1][y+1]==1) {
+                //System.out.println("\nx-1,y+1 x="+x+" y="+y+"\n");
+                ident_rekurs(x-1,y+1, width, height);
+            }
         if (x<width-1&&y>0)
-            ident_rekurs(x+1,y-1, width, height);*/
-        for (int i=-1; i<2; i++)
+            if (raskras[x+1][y-1]==1) {
+                //System.out.println("\nx+1,y-1 x="+x+" y="+y+"\n");
+                ident_rekurs(x+1,y-1, width, height);
+            }
+        
+        /*for (int i=-1; i<2; i++)
             for (int j=-1; j<2; j++)
                 if (i!=0&&j!=0)
                     try {
                         ident_rekurs(x+i,y+j, width, height);
-                    } catch (Exception e) {}
-        return;// 1;
+                    } catch (Exception e) {}*/
+        //return;// 1;
     }
     
     /*
