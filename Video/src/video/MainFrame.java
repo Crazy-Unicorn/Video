@@ -85,6 +85,10 @@ public class MainFrame extends javax.swing.JFrame {
         return checkboxSmenFon.isSelected();
     }
     
+    public boolean isSelectedNoBorderFigures() {
+        return checkboxNoBorderFigures.isSelected();
+    }
+    
     public double getSmenFonLimValue() {
         return Double.parseDouble(smenFonLimit.getText());
     }
@@ -247,6 +251,7 @@ public class MainFrame extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         rbuttonPorogColorSubstr = new javax.swing.JRadioButton();
         rbuttonItog = new javax.swing.JRadioButton();
+        checkboxNoBorderFigures = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Видео в символы");
@@ -418,6 +423,8 @@ public class MainFrame extends javax.swing.JFrame {
 
         rbuttonItog.setText("итог");
 
+        checkboxNoBorderFigures.setText("не учитывать граничные фигуры");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -431,7 +438,8 @@ public class MainFrame extends javax.swing.JFrame {
                                 .addComponent(buttonFileChooser)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(buttonStart))
-                            .addComponent(loadingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(loadingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(checkboxNoBorderFigures))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -527,7 +535,8 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(smenFonLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
                     .addComponent(rbuttonPorogColorSubstr)
-                    .addComponent(rbuttonItog))
+                    .addComponent(rbuttonItog)
+                    .addComponent(checkboxNoBorderFigures))
                 .addGap(29, 29, 29)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -784,6 +793,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JButton buttonSimpleView;
     private javax.swing.JButton buttonStart;
+    private javax.swing.JCheckBox checkboxNoBorderFigures;
     private javax.swing.JCheckBox checkboxSmenFon;
     private javax.swing.JButton colLimMinus;
     private javax.swing.JButton colLimPlus;

@@ -312,7 +312,16 @@ public class Foo {
         stop = true;
     }
     
-    
+        boolean fonmodel = false;
+        boolean porogBit = false;
+        boolean porogColor = false;
+        boolean porogGrey = false;
+        boolean porogColorSubstr = false;
+        boolean smenFon = false;
+        boolean itog = false;
+        boolean noBorderFigures = false;
+        double smenFonLim = 2;
+        
     private long imgNumber = 0;
     
     public void processview(VideoPanel panel, VideoPanel output, MainFrame frame, int each, int framesCount, int colorlimit) {
@@ -320,15 +329,16 @@ public class Foo {
         
         frame.setPassive();
         
-        boolean fonmodel = frame.isSelectedRButtonFonModel();
-        boolean porogBit = frame.isSelectedRButtonPorogBit();
-        boolean porogColor = frame.isSelectedRButtonPorogColor();
-        boolean porogGrey = frame.isSelectedRButtonPorogGrey();
-        boolean porogColorSubstr = frame.isSelectedRButtonPorogColorSubstr();
-        boolean smenFon = frame.isSelectedSmenFon();
-        boolean itog = frame.isSelectedRButtonItog();
+        fonmodel = frame.isSelectedRButtonFonModel();
+        porogBit = frame.isSelectedRButtonPorogBit();
+        porogColor = frame.isSelectedRButtonPorogColor();
+        porogGrey = frame.isSelectedRButtonPorogGrey();
+        porogColorSubstr = frame.isSelectedRButtonPorogColorSubstr();
+        smenFon = frame.isSelectedSmenFon();
+        itog = frame.isSelectedRButtonItog();
+        noBorderFigures = frame.isSelectedNoBorderFigures();
         
-        double smenFonLim = 2;
+        smenFonLim = 2;
         try {
             smenFonLim = frame.getSmenFonLimValue();
         } catch (Exception e) {
@@ -1184,6 +1194,7 @@ public class Foo {
             //System.out.println(x);
         }
         ident_rekurs(x, y, width, height);
+        
     }
     
     private void ident_rekurs(int x, int y, int width, int height) {
@@ -1212,7 +1223,7 @@ public class Foo {
             raskrobj.height++;
         }
         
-        ////System.out.println(raskrasId+" "+raskrobj.left+" "+raskrobj.getRight()+" "+raskrobj.top+" "+raskrobj.getBottom());
+        //System.out.println(raskrasId+" "+raskrobj.left+" "+raskrobj.getRight()+" "+raskrobj.top+" "+raskrobj.getBottom()+" "+width+" "+height);
         
         //raskrobj.img[x][y]=1;
         
@@ -1305,25 +1316,38 @@ public class Foo {
         //System.out.println("\n"+width+" wh "+height+" rosize "+raskrobjs.size()+"\n");
         for (int id = 0; id<count; id++) {
             RaskrasObject raskrobj = raskrobjs.get(id);
-            int objRaskrasId = id+2;
-            g2.setColor(new Color((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
-            for (int i=raskrobj.left; i<raskrobj.getRight(); i++)
-                for (int j=raskrobj.top; j<raskrobj.getBottom(); j++) {
-                    //System.out.println(i+" "+j);
-                   /* if (raskras[i][j]==objRaskrasId)
-                        g2.setColor(Color.BLACK);
-                    else
-                        g2.setColor(Color.WHITE);
-                    g2.drawLine(i, j, i, j);*/
-                    if (raskras[i][j]==objRaskrasId) {
-                        //g2.setColor(Color.YELLOW);
-                        //g2.setColor(Color.YELLOW);
-                        g2.drawLine(i, j, i, j);
-                    } /*else {
-                        getColor(original, i, j);
-                        g2.drawLine(i, j, i, j);
-                    }*/
-                }
+            boolean access = true;
+            if (noBorderFigures==true) {
+                if (raskrobj.left>0&&raskrobj.top>0&&raskrobj.getRight()<width&&raskrobj.getBottom()<height) {} 
+                else access = false;
+            }
+            //if (raskrobj.left>0&&raskrobj.top>0&&raskrobj.getRight()<width&&raskrobj.getBottom()<height) {
+            if (access) {
+                int objRaskrasId = id+2;
+                g2.setColor(new Color((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
+                for (int i=raskrobj.left; i<raskrobj.getRight(); i++)
+                    for (int j=raskrobj.top; j<raskrobj.getBottom(); j++) {
+                        //System.out.println(i+" "+j);
+                    /* if (raskras[i][j]==objRaskrasId)
+                            g2.setColor(Color.BLACK);
+                        else
+                            g2.setColor(Color.WHITE);
+                        g2.drawLine(i, j, i, j);*/
+                        try {
+                        if (raskras[i][j]==objRaskrasId) {
+                            //g2.setColor(Color.YELLOW);
+                            //g2.setColor(Color.YELLOW);
+                            g2.drawLine(i, j, i, j);
+                        } /*else {
+                            getColor(original, i, j);
+                            g2.drawLine(i, j, i, j);
+                        }*/
+                        } catch (Exception e) {
+                            System.out.println("Exce i = "+i+" j = "+j+" width = "+width+" height = "+height);
+                            System.out.println(raskrasId+" "+raskrobj.left+" "+raskrobj.getRight()+" "+raskrobj.top+" "+raskrobj.getBottom()+" "+width+" "+height);
+                        }
+                    }
+            }
         }
         return res;
     }
