@@ -77,6 +77,10 @@ public class MainFrame extends javax.swing.JFrame {
         return rbuttonPorogColorSubstr.isSelected();
     }
     
+    public boolean isSelectedRButtonItog() {
+        return rbuttonItog.isSelected();
+    }
+    
     public boolean isSelectedSmenFon() {
         return checkboxSmenFon.isSelected();
     }
@@ -197,8 +201,10 @@ public class MainFrame extends javax.swing.JFrame {
         buttonGroup.add(rbuttonPorogColor);
         buttonGroup.add(rbuttonPorogGrey);
         buttonGroup.add(rbuttonPorogColorSubstr);
+        buttonGroup.add(rbuttonItog);
         //rbuttonFonModel.setSelected(true);
-        rbuttonPorogBit.setSelected(true);
+        //rbuttonPorogBit.setSelected(true);
+        rbuttonItog.setSelected(true);
         model.setNet(net);
     }
 
@@ -240,6 +246,7 @@ public class MainFrame extends javax.swing.JFrame {
         smenFonLimit = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         rbuttonPorogColorSubstr = new javax.swing.JRadioButton();
+        rbuttonItog = new javax.swing.JRadioButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Видео в символы");
@@ -409,6 +416,8 @@ public class MainFrame extends javax.swing.JFrame {
 
         rbuttonPorogColorSubstr.setText("в разностном цвете");
 
+        rbuttonItog.setText("итог");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -459,7 +468,9 @@ public class MainFrame extends javax.swing.JFrame {
                                 .addGap(72, 72, 72)
                                 .addComponent(rbuttonFonModel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(rbuttonPorogBit)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(rbuttonPorogBit)
+                                    .addComponent(rbuttonItog))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -515,7 +526,8 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(smenFonLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
-                    .addComponent(rbuttonPorogColorSubstr))
+                    .addComponent(rbuttonPorogColorSubstr)
+                    .addComponent(rbuttonItog))
                 .addGap(29, 29, 29)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -791,6 +803,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel loadingLabel;
     private video.VideoPanel panel;
     private javax.swing.JRadioButton rbuttonFonModel;
+    private javax.swing.JRadioButton rbuttonItog;
     private javax.swing.JRadioButton rbuttonPorogBit;
     private javax.swing.JRadioButton rbuttonPorogColor;
     private javax.swing.JRadioButton rbuttonPorogColorSubstr;

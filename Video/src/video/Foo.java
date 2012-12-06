@@ -277,6 +277,7 @@ public class Foo {
                 //generated.setImage(javaImage);
                 //frame.repaint();
                 //frame.pack();
+                
             }
             }
         }
@@ -325,6 +326,7 @@ public class Foo {
         boolean porogGrey = frame.isSelectedRButtonPorogGrey();
         boolean porogColorSubstr = frame.isSelectedRButtonPorogColorSubstr();
         boolean smenFon = frame.isSelectedSmenFon();
+        boolean itog = frame.isSelectedRButtonItog();
         
         double smenFonLim = 2;
         try {
@@ -344,6 +346,9 @@ public class Foo {
             type = 3;
         if (porogColorSubstr)
             type = 4;
+        if (itog)
+            type = 5;
+        
         //java.lang.System.out.println(smenFon);
         
         if (this.file == null) {
@@ -477,14 +482,14 @@ public class Foo {
                             output.setSize(javaImage);
                         }
                         
-                        
+                        ///System.out.println("\n width = "+javaImage.getWidth()+" & height = "+javaImage.getHeight()+"\n");
                         
                         ///pre = System.currentTimeMillis();
                         panel.setImage(gPanel, javaImage);
                         ///post = System.currentTimeMillis();
                         //java.lang.System.out.println((post-pre)+" view");
                         
-                        pre = System.currentTimeMillis();
+                        ////pre = System.currentTimeMillis();
 
                         
                         /*if (imgNumber%each==0) {
@@ -499,8 +504,13 @@ public class Foo {
 
                             try {
 
-                                if (type>0)
+                                if (type>0) {
                                     processedResult = getCutFon(javaImage, processedResult, false, colorlimit, type, smenFon, smenFonLim);
+                                    
+                                    /* The Most Important */
+                                    if (itog)
+                                        processedResult = getFinalImage(javaImage);
+                                }
                             //processedResult = getShineFon(javaImage, processedResult, false, colorlimit);
                             
                                 output.setImage(gOutput, processedResult);//cutFon);
@@ -510,8 +520,8 @@ public class Foo {
                                     throw e;
                             }
 
-                        post = System.currentTimeMillis();
-                        java.lang.System.out.println(post-pre);
+                        ////post = System.currentTimeMillis();
+                        ////java.lang.System.out.println(post-pre);
                         //java.lang.System.out.println((post-pre)+" processed");
                     }
                 }
@@ -674,7 +684,11 @@ public class Foo {
                 g = (int)(rgb[i][j][1]/N);
                 b = (int)(rgb[i][j][2]/N);
                 
+                try {
                 g2.setColor(new Color(r,g,b));
+                } catch (Exception e) {
+                    System.out.println("red = "+r+" green = "+g+" blue = "+b);
+                }
                 g2.drawLine(i, j, i, j);
                 
                 Color oldCol = getColorFromRaster(raster, model, i, j);//getColor(image, i, j);
@@ -827,7 +841,7 @@ public class Foo {
                 }
         }*/
         
-        if (typePorog==1)
+        if (typePorog==1||typePorog==5)
             bitmap = new int[width][height];
         
         if (simple) {
@@ -853,7 +867,7 @@ public class Foo {
                     value = colorToBin(value, limit);
                     
                     //if (toBit) {
-                    if (typePorog==1) {
+                    if (typePorog==1||typePorog==5) {
                         if (value==255) {
                             backgrpixcount++;
                             bitmap[i][j]=-1;
@@ -896,7 +910,7 @@ public class Foo {
                 }
         }
         
-        if (net!=null && typePorog==1) {
+        if (net!=null && typePorog==5) {
 
             
             /*java.lang.System.out.print("\n\nДоДо");
@@ -1115,94 +1129,27 @@ public class Foo {
                 return t1;
             
         }
-        
-        /*while (changed) {
-            changed = false;
-            a++;
-            if (a>20)
-                collision = true;
-            if (first) {
-                first = false;
-                for (int i=0; i<width; i++)
-                    for (int j=0; j<height; j++) {
-                        sum = 0;
-                        for (int q=-1; q<2; q++)
-                            for (int r=-1; r<2; r++)
-                                try {
-                                    sum += t1[i+q][j+r];
-                                    if (collision==true)
-                                        if (q==0&&r==0)
-                                            sum += t1[i][j];
-                                } catch (Exception e) {}
-                        if (sum>0) {
-                            t2[i][j] = 1;
-                            if (t1[i][j]!=t2[i][j]) {
-                                changed=true;
-                            }
-                        }
-                        if (sum<0) {
-                            t2[i][j] = -1;
-                            if (t1[i][j]!=t2[i][j]) {
-                                changed=true;        
-                            }
-                        }
-                        if (sum==0)
-                            t2[i][j] = t1[i][j];
-                    }
-                if (changed==false)
-                    return t1;
-            } else {
-                first = true;
-                
-                for (int i=0; i<width; i++)
-                    for (int j=0; j<height; j++) {
-
-                        sum = 0;
-                        for (int q=-1; q<2; q++)
-                            for (int r=-1; r<2; r++)
-                                try {
-                                    sum += t2[i+q][j+r];
-                                    if (collision==true)
-                                        if (q==0&&r==0)
-                                            sum += t2[i][j];                                    
-                                } catch (Exception e) {}
-                        if (sum>0) {
-                            t1[i][j] = 1;
-                            if (t2[i][j]!=t1[i][j]) {
-                                changed=true;
-                            }
-                        }
-                        if (sum<0) {
-                            t1[i][j] = -1;
-                            if (t2[i][j]!=t1[i][j]) {
-                                changed=true;
-                            }
-                        }
-                        if (sum==0)
-                            t1[i][j] = t2[i][j];
-                    }
-                
-                if (changed==false)
-                    return t2;
-            }
-        }*/
         return pixs;
     }
     
     private int[][] raskras = null;
 
-    ArrayList<int[][]> objects = null;
+    //ArrayList<int[][]> objects = null;
     
-    private int raskrasId;
+    private int raskrasId = 0;
     
+    private ArrayList<RaskrasObject> raskrobjs = new ArrayList<RaskrasObject>();
+
     public int[][] identify(int[][] pixs) {
         int width = pixs.length;
         if (width == 0)
             throw new RuntimeException("binfilter width==0");
         int height = pixs[0].length;
         
+        //System.out.println("\n"+width+" wh "+height+"\n");
+        
         raskras = new int[width][height];
-        objects = new ArrayList<int[][]>();
+        //objects = new ArrayList<int[][]>();
 
         raskrasId = 1;
         
@@ -1216,12 +1163,26 @@ public class Foo {
                 //    objId++;
                 ident_rekurs_start(i, j, width, height);
         
+        
+        /* The Most Important */
         return raskras;
     }
     
     private void ident_rekurs_start(int x, int y, int width, int height) {
-        if (raskras[x][y]==1)
+        if (raskras[x][y]==1) {
             raskrasId++;
+            RaskrasObject raskrobj = new RaskrasObject();
+            raskrobj.left = x;
+            raskrobj.top = y;
+            raskrobj.width = 1;
+            raskrobj.height = 1;
+            /*raskrobj.img = new int[width][height];
+            for (int i=0; i<width; i++)
+                for (int j=0; j<height; j++)
+                    raskrobj.img[i][j] = 0;*/
+            raskrobjs.add(raskrobj);
+            //System.out.println(x);
+        }
         ident_rekurs(x, y, width, height);
     }
     
@@ -1235,6 +1196,25 @@ public class Foo {
         if (raskras[x][y]>1||raskras[x][y]==0)
             return;// 0;
         raskras[x][y] = raskrasId;
+        RaskrasObject raskrobj = raskrobjs.get(raskrasId-2);
+        
+        if (x<raskrobj.left) {
+            raskrobj.left--;
+            raskrobj.width++;
+        } else if (x>=raskrobj.getRight()) {
+            raskrobj.width++;
+        }
+        
+        if (y<raskrobj.top) {
+            raskrobj.top--;
+            raskrobj.height++;
+        } else if (y>=raskrobj.getBottom()) {
+            raskrobj.height++;
+        }
+        
+        ////System.out.println(raskrasId+" "+raskrobj.left+" "+raskrobj.getRight()+" "+raskrobj.top+" "+raskrobj.getBottom());
+        
+        //raskrobj.img[x][y]=1;
         
         /*if (x<width-1)
             ident_rekurs(x+1,y, width, height);
@@ -1289,6 +1269,63 @@ public class Foo {
                         ident_rekurs(x+i,y+j, width, height);
                     } catch (Exception e) {}*/
         //return;// 1;
+    }
+    
+    public BufferedImage getFinalImage(BufferedImage original) {
+
+        BufferedImage res = new BufferedImage(original.getWidth(),
+            original.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        
+        if (raskras==null)
+            return original;
+        
+        int count = raskrasId-1;
+        
+        int width = original.getWidth();
+        int height = original.getHeight();
+        
+        Graphics2D g2 = res.createGraphics();
+        
+        //g2.setColor(Color.BLACK);
+        
+        Object[] rastNmod = getAllRasterAndColorModel(original);
+        
+        Raster raster = (Raster)rastNmod[0];
+        ColorModel cmodel = (ColorModel)rastNmod[1];
+        
+        
+        for (int i=0; i<width; i++)
+            for (int j=0; j<height; j++) {
+                g2.setColor(getColorFromRaster(raster, cmodel, i, j));
+                g2.drawLine(i, j, i, j);
+            }
+        
+        //g2.setColor(Color.WHITE);
+        
+        //System.out.println("\n"+width+" wh "+height+" rosize "+raskrobjs.size()+"\n");
+        for (int id = 0; id<count; id++) {
+            RaskrasObject raskrobj = raskrobjs.get(id);
+            int objRaskrasId = id+2;
+            g2.setColor(new Color((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
+            for (int i=raskrobj.left; i<raskrobj.getRight(); i++)
+                for (int j=raskrobj.top; j<raskrobj.getBottom(); j++) {
+                    //System.out.println(i+" "+j);
+                   /* if (raskras[i][j]==objRaskrasId)
+                        g2.setColor(Color.BLACK);
+                    else
+                        g2.setColor(Color.WHITE);
+                    g2.drawLine(i, j, i, j);*/
+                    if (raskras[i][j]==objRaskrasId) {
+                        //g2.setColor(Color.YELLOW);
+                        //g2.setColor(Color.YELLOW);
+                        g2.drawLine(i, j, i, j);
+                    } /*else {
+                        getColor(original, i, j);
+                        g2.drawLine(i, j, i, j);
+                    }*/
+                }
+        }
+        return res;
     }
     
     /*

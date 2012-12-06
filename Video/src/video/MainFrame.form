@@ -79,7 +79,10 @@
                               <EmptySpace min="-2" pref="72" max="-2" attributes="0"/>
                               <Component id="rbuttonFonModel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="rbuttonPorogBit" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="rbuttonPorogBit" min="-2" max="-2" attributes="0"/>
+                                  <Component id="rbuttonItog" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
@@ -148,6 +151,7 @@
                   <Component id="smenFonLimit" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="rbuttonPorogColorSubstr" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rbuttonItog" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -377,6 +381,11 @@
     <Component class="javax.swing.JRadioButton" name="rbuttonPorogColorSubstr">
       <Properties>
         <Property name="text" type="java.lang.String" value="&#x432; &#x440;&#x430;&#x437;&#x43d;&#x43e;&#x441;&#x442;&#x43d;&#x43e;&#x43c; &#x446;&#x432;&#x435;&#x442;&#x435;"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="rbuttonItog">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&#x438;&#x442;&#x43e;&#x433;"/>
       </Properties>
     </Component>
   </SubComponents>
