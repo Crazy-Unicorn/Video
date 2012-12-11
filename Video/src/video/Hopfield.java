@@ -236,6 +236,7 @@ public class Hopfield {
                 }
             }
         }
+        
         if (tw<w) {
             koef = (double)w/tw;
             for (int j=0; j<height; j++) {
@@ -277,10 +278,116 @@ public class Hopfield {
                     result[i][jth] = tempfigure1[i][(int)(jth*koef)];
             }
         }
-        
         return result;
     }
     
+
+    public int[][] resize_back(int[][] figure, int toWidth, int toHeight) { //figure[this.width][this.height]
+
+        int[][] tempfigure1 = new int[toWidth][this.height];
+        int[][] result = new int[toWidth][toHeight];
+
+        int tw = this.width;
+        int w = toWidth;
+        int th = this.height;
+        int h = toHeight;
+
+        int multi = 0;
+        int mod = 0;
+        double koef = 0;
+
+        if (tw==w) {
+            for (int i=0; i<width; i++)
+                System.arraycopy(figure[i], 0, tempfigure1[i], 0, height);
+        }
+
+        if (tw>w) {
+            multi = w / tw;
+            mod = w % tw;
+            koef = 0;
+            if (mod>0)
+                koef = (double)tw/mod;
+            for (int j=0; j<th; j++) {
+                //int div = -1;
+                for (int itw=0, iww=0, div=-1; itw<tw; itw++) {
+                    for (int iw=0; iw<multi; iw++)
+                        tempfigure1[iww++][j] = figure[itw][j];
+                    if (mod>0) {
+                        int ndiv = (int) (itw/koef);
+                        if (ndiv!=div) {
+                            div = ndiv;
+                            tempfigure1[iww++][j] = figure[itw][j];
+                        }
+                        //if (iw%koef==0)
+                        //    tempfigure[j][iwtw++] = figure[j][iw];
+                    }
+                }
+            }
+        }
+
+        if (tw<w) {
+            koef = (double)tw/w;
+            for (int j=0; j<th; j++) {
+                for (int iw=0; iw<w; iw++)
+                    //try {
+                        tempfigure1[iw][j] = figure[(int)(iw*koef)][j];
+                    //} catch (Exception e) {
+                    //    System.out.println("#1 itw = "+itw+" j = "+j+" (int)(itw*koef) = "+(int)(itw*koef)+" width = "+width+" "+e.toString());
+                    //}
+            }
+        }
+
+        if (th==h) {
+            for (int i=0; i<tw; i++)
+                System.arraycopy(tempfigure1[i], 0, result[i], 0, height);
+        }
+
+        if (th>h) {
+            multi = h / th;
+            mod = h % th;
+            koef = 0;
+            if (mod>0)
+                koef = (double)th/mod;
+            for (int i=0; i<w; i++) {
+                for (int jth=0, jhh=0, div=-1; jth<h; jth++) {
+                    for (int jh=0; jh<multi; jh++)
+                        result[i][jhh++] = tempfigure1[i][jth];
+                    if (mod>0) {
+                        int ndiv = (int) (jth/koef);
+                        if (ndiv!=div) {
+                            div = ndiv;
+                            result[i][jhh++] = tempfigure1[i][jth];
+                        }
+                    }
+                }
+            }
+        }
+
+        //try {
+        if (th<h) {
+            koef = (double)th/h;
+            for (int i=0; i<w; i++) {
+                for (int jh=0; jh<h; jh++)
+                    result[i][jh] = tempfigure1[i][(int)(jh*koef)];
+            }
+        }
+        /*} catch (Exception e) {
+            System.out.println("#2 "+e.toString());
+        }*/
+        return result;
+    }
+
+
+    public int[][] process(int[][] figure, int width, int height) {
+        figure = resize(figure, width, height);
+        figure = identify(figure);
+
+        //System.out.println(figure.length+" x "+figure[0].length);
+        
+            figure = resize_back(figure, width, height);
+
+        return figure;
+    }
     
     public int[] resize_old(int[][] figure, int width, int height) { //figure[height][width]
         int[] newfigure = new int[this.width*this.height];
