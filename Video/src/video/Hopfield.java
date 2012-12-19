@@ -33,6 +33,13 @@ public class Hopfield {
 
     }
     
+    public void setSize(int width, int height) {
+        
+        this.width = width;
+        this.height = height;
+        
+    }
+    
     public int getWidth() {
         return width;
     }
@@ -300,7 +307,7 @@ public class Hopfield {
             for (int i=0; i<width; i++)
                 System.arraycopy(figure[i], 0, tempfigure1[i], 0, height);
         }
-
+        
         if (tw>w) {
             multi = w / tw;
             mod = w % tw;
@@ -336,10 +343,11 @@ public class Hopfield {
                     //}
             }
         }
-
+    
+            
         if (th==h) {
-            for (int i=0; i<tw; i++)
-                System.arraycopy(tempfigure1[i], 0, result[i], 0, height);
+            for (int i=0; i<w; i++)
+                System.arraycopy(tempfigure1[i], 0, result[i], 0, toHeight);
         }
 
         if (th>h) {
@@ -363,7 +371,6 @@ public class Hopfield {
             }
         }
 
-        //try {
         if (th<h) {
             koef = (double)th/h;
             for (int i=0; i<w; i++) {
@@ -371,6 +378,9 @@ public class Hopfield {
                     result[i][jh] = tempfigure1[i][(int)(jh*koef)];
             }
         }
+        
+
+        
         /*} catch (Exception e) {
             System.out.println("#2 "+e.toString());
         }*/
@@ -379,13 +389,14 @@ public class Hopfield {
 
 
     public int[][] process(int[][] figure, int width, int height) {
+        
         figure = resize(figure, width, height);
         figure = identify(figure);
 
         //System.out.println(figure.length+" x "+figure[0].length);
         
             figure = resize_back(figure, width, height);
-
+            
         return figure;
     }
     

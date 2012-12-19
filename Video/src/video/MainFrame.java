@@ -113,8 +113,16 @@ public class MainFrame extends javax.swing.JFrame {
      * Creates new form MainFrame
      */
     public MainFrame() {
+        
+        /*Integer a = 127;
+        Integer b = 127;
+        Integer c = 128;
+        Integer d = 128;
+        System.out.println(a==b);
+        System.out.println(c==d);*/
+        
         initComponents();
-        net = new Hopfield(5, 5);
+        net = new Hopfield(7, 7);
         net.init();
         net.learn();
         
@@ -597,6 +605,9 @@ public class MainFrame extends javax.swing.JFrame {
                 public void run() {
                     stopButton.setEnabled(true);
                     frame.repaint();
+                    //net.setSize(7, 7);
+                    net.init();
+                    net.learn();
                     model.processview(panel, generated, frame, Integer.parseInt(fps.getText()), Integer.parseInt(framesCount.getText()), Integer.parseInt(colorLimit.getText()));
                     loadingLabel.setText("Обработка файла завершена!");
                     stopButton.setEnabled(false);

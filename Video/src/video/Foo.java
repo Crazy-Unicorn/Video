@@ -8,10 +8,7 @@ import com.sun.jndi.toolkit.ctx.HeadTail;
 import com.xuggle.xuggler.*;
 import com.xuggle.xuggler.demos.VideoImage;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
+import java.awt.image.*;
 import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.IOException;
@@ -580,7 +577,8 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
     private long[][][] rgb = null;
     
     public BufferedImage getProcessedResult(BufferedImage image, int each, int framesCount, int limit, boolean smenFon, double smenFonLim) {
-
+      
+        
         Object[] rasterNmodel = getAllRasterAndColorModel(image);
         
         Raster raster = (Raster)rasterNmodel[0];
@@ -638,7 +636,7 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
 
         int N = images.size();
         BufferedImage res = new BufferedImage(width,
-            height, BufferedImage.TYPE_INT_ARGB);
+            height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = res.createGraphics();
         //long pre = System.currentTimeMillis();
         int r=0, g=0, b=0;
@@ -650,6 +648,11 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
         //System.out.println("byteslen "+(((DataBufferByte)image.getRaster().getDataBuffer()).getData()).length);
 
         //byte[] frame = new byte[width*height*3];
+        
+        
+        long pre = System.currentTimeMillis();
+
+        int[] imagePixelData = ((DataBufferInt)res.getRaster().getDataBuffer()).getData();
         for (int i=0; i<width; i++)
             for (int j=0; j<height; j++) {
                 r = (int)(rgb[i][j][0]/N);
@@ -668,11 +671,12 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                 ///System.out.println("fullrgb = "+fullrgb);
                 //res.setRGB(i, j, fullrgb);
                 //try {
-                g2.setColor(new Color(r,g,b));
+                imagePixelData[j*width+i] = r<<16 | g <<8 | b;
+                //g2.setColor(new Color(r,g,b));
                 //} catch (Exception e) {
                 //    System.out.println("red = "+r+" green = "+g+" blue = "+b);
                 //}
-                g2.drawLine(i, j, i, j);
+                //g2.drawLine(i, j, i, j);
                 
                 Color oldCol = getColorFromRaster(raster, model, i, j);
                 or = oldCol.getRed();
@@ -682,7 +686,8 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                     bpix++;
                 
             }
-
+      long post = System.currentTimeMillis();
+      java.lang.System.out.println(post-pre);
         //res = processFrame(frame, width, height);
 
             /*for (int i=0; i<width; i++)
@@ -1377,12 +1382,12 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                 for (int j=0, jj = robj.top; j<robj.height; j++, jj++) {
                     robjpixs[i][j] = raskras[ii][jj]==0?-1:1;
                 }
-            
+
             robjpixs = net.process(robjpixs, robj.width, robj.height);
 
             allrobjpixs.add(robjpixs);
         }
-        
+
         //System.out.println("raskrobjs size = "+raskrobjs.size()+" _1");
         
         for (int i=0; i<width; i++)
