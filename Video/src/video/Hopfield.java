@@ -390,12 +390,15 @@ public class Hopfield {
 
     public int[][] process(int[][] figure, int width, int height) {
         
+        if (width==0 && height==0)
+            return null;
+        
         figure = resize(figure, width, height);
         figure = identify(figure);
 
         //System.out.println(figure.length+" x "+figure[0].length);
         
-            figure = resize_back(figure, width, height);
+        figure = resize_back(figure, width, height);
             
         return figure;
     }

@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.security.AccessController;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import sun.security.action.GetPropertyAction;
@@ -322,6 +323,11 @@ public class Foo {
         
     private long imgNumber = 0;
     
+    int width = 0;
+    int height = 0;
+    
+    int distSkle = 0;
+    
     public void processview(VideoPanel panel, VideoPanel output, MainFrame frame, int each, int framesCount, int colorlimit) {
         stop = false;
         
@@ -335,6 +341,8 @@ public class Foo {
         smenFon = frame.isSelectedSmenFon();
         itog = frame.isSelectedRButtonItog();
         noBorderFigures = frame.isSelectedNoBorderFigures();
+        
+        distSkle = frame.getDistSkleValue();
         
         smenFonLim = 2;
         try {
@@ -480,6 +488,9 @@ public class Foo {
                         }
                         BufferedImage javaImage = Utils.videoPictureToImage(newPic);
 
+                        width = javaImage.getWidth();
+                        height = javaImage.getHeight();
+                        
                         if (imgNumber==0) {
                             panel.setSize(javaImage);
                             output.setSize(javaImage);
@@ -491,24 +502,38 @@ public class Foo {
                         
                         ////pre = System.currentTimeMillis();
 
-                        BufferedImage processedResult = getProcessedResult(javaImage, each, framesCount, colorlimit, smenFon, smenFonLim);
+                        rgbpix = new int[javaImage.getWidth()*javaImage.getHeight()*3];
+                        
+                        getProcessedResult(javaImage, each, framesCount, colorlimit, smenFon, smenFonLim);
 
-                            try {
+                        try {
 
-                                if (type>0) {
-                                    processedResult = getCutFon(javaImage, processedResult, false, colorlimit, type, smenFon, smenFonLim);
+                            if (type>0) {
+                                getCutFon(javaImage, false, colorlimit, type, smenFon, smenFonLim);
                                     
-                                    if (itog)
-                                        processedResult = getFinalImage(javaImage);
-                                }
+                                if (itog)
+                                    getFinalImage(javaImage);
+                            }
                             //processedResult = getShineFon(javaImage, processedResult, false, colorlimit);
                             
-                                output.setImage(gOutput, processedResult);
-                            } catch (RuntimeException e) {
-                                if (!e.getMessage().equals("forgetOldBackground"))
-                                    throw e;
-                            }
-
+                            
+                            //Arrays.fill(((DataBufferInt)javaImage.getData().getDataBuffer()).getData(),color);    
+                            //output.setImage(gOutput, processedResult);
+                        } catch (RuntimeException e) {
+                            if (!e.getMessage().equals("forgetOldBackground"))
+                                throw e;
+                        }
+                      
+                        BufferedImage res = new BufferedImage(width,
+                            height, BufferedImage.TYPE_INT_RGB);
+                        
+                        int[] imagePixelData = ((DataBufferInt)res.getRaster().getDataBuffer()).getData();
+                        for (int i=0; i<width; i++)
+                            for (int j=0; j<height; j++)
+                                imagePixelData[j*width+i] = rgbpix[(i*height+j)*3]<<16 | rgbpix[(i*height+j)*3+1] <<8 | rgbpix[(i*height+j)*3+2];
+                        
+                        output.setImage(gOutput, res);
+                        
                         ////post = System.currentTimeMillis();
                         ////java.lang.System.out.println(post-pre);
                     }
@@ -575,17 +600,18 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
     }
     
     private long[][][] rgb = null;
+    private int[] rgbpix = null;
     
-    public BufferedImage getProcessedResult(BufferedImage image, int each, int framesCount, int limit, boolean smenFon, double smenFonLim) {
+    
+    
+    
+    public void getProcessedResult(BufferedImage image, int each, int framesCount, int limit, boolean smenFon, double smenFonLim) {
       
-        
         Object[] rasterNmodel = getAllRasterAndColorModel(image);
         
         Raster raster = (Raster)rasterNmodel[0];
         ColorModel model = (ColorModel)rasterNmodel[1];
-
-        int width = image.getWidth();
-        int height = image.getHeight();
+        
         if (rgb==null) {
             rgb = new long[width][height][3];
             for (int i=0; i<width; i++)
@@ -593,7 +619,7 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                     for (int k=0; k<3; k++)
                         rgb[i][j][k]=0;
         }
-        
+
         if (imgNumber%each==0) {
             if (images.size()<framesCount) {
                 for (int i=0; i<width; i++)
@@ -629,74 +655,42 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
             }
         }
         imgNumber++;
-        
-        if (images.isEmpty())
-            return new BufferedImage(width,
-            height, BufferedImage.TYPE_INT_ARGB);
-
+      
+        if (images.isEmpty()) {
+            int size = width*height*3;
+            for (int i=0; i<size; i++)
+                rgbpix[i]=0;
+                
+        }
         int N = images.size();
-        BufferedImage res = new BufferedImage(width,
-            height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = res.createGraphics();
+
         //long pre = System.currentTimeMillis();
-        int r=0, g=0, b=0;
-        int or=0, og=0, ob=0;
-        int bpix = 0;
-
-
-
-        //System.out.println("byteslen "+(((DataBufferByte)image.getRaster().getDataBuffer()).getData()).length);
-
-        //byte[] frame = new byte[width*height*3];
+        int r, g, b, or, og, ob, bpix=0, pos;
         
+        ////long pre = System.currentTimeMillis();
         
-        long pre = System.currentTimeMillis();
-
-        int[] imagePixelData = ((DataBufferInt)res.getRaster().getDataBuffer()).getData();
         for (int i=0; i<width; i++)
             for (int j=0; j<height; j++) {
                 r = (int)(rgb[i][j][0]/N);
                 g = (int)(rgb[i][j][1]/N);
                 b = (int)(rgb[i][j][2]/N);
 
-                /*byte byr = (byte)(r-128);
-                byte byg = (byte)(g-128);
-                byte byb = (byte)(b-128);
-                frame[(i*height+j)*3] = byb;
-                frame[(i*height+j)*3+1] = (byte)(0);
-                frame[(i*height+j)*3+2] = (byte)(0);*/
-               // by =
-                //res.get
-                //int fullrgb =  (r << 16) | (g << 8) | (b << 0);
-                ///System.out.println("fullrgb = "+fullrgb);
-                //res.setRGB(i, j, fullrgb);
-                //try {
-                imagePixelData[j*width+i] = r<<16 | g <<8 | b;
-                //g2.setColor(new Color(r,g,b));
-                //} catch (Exception e) {
-                //    System.out.println("red = "+r+" green = "+g+" blue = "+b);
-                //}
-                //g2.drawLine(i, j, i, j);
+                pos = (i*height+j)*3;
                 
+                rgbpix[pos]   = r;
+                rgbpix[pos+1] = g;
+                rgbpix[pos+2] = b;
+
                 Color oldCol = getColorFromRaster(raster, model, i, j);
                 or = oldCol.getRed();
                 og = oldCol.getGreen();
                 ob = oldCol.getBlue();
                 if (Math.abs(r-or)+Math.abs(g-og)+Math.abs(b-ob)<limit)
                     bpix++;
-                
             }
-      long post = System.currentTimeMillis();
-      java.lang.System.out.println(post-pre);
-        //res = processFrame(frame, width, height);
+      ////long post = System.currentTimeMillis();
+      ////java.lang.System.out.println(post-pre);
 
-            /*for (int i=0; i<width; i++)
-            for (int j=0; j<height; j++) {
-                System.out.println("raster! "+res.getRaster().getDataBuffer().getElem(i*height+j));
-            }*/
-        //System.out.println("raster! "+res.getRaster().getDataBuffer().getSize());
-        //g2.setColor(new Color(0,0,0));
-        //g2.drawLine(0, 0, 100, 100);
         if (smenFon) {
             int all = width*height;
             if (all/(bpix+1)>smenFonLim) {
@@ -704,150 +698,35 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                     rgb = null;
             }
         }
-      //long post = System.currentTimeMillis();
-      //java.lang.System.out.println(post-pre);
-        return res;
+      ////long post = System.currentTimeMillis();
+      ////java.lang.System.out.println(post-pre);
     }
     
     
-    /*public BufferedImage getProcessedResult(BufferedImage image) {
-        //java.lang.System.out.println(images.size());
-        int width = image.getWidth();
-        int height = image.getHeight();
-        if (images.isEmpty())
-            return new BufferedImage(width,
-            height, BufferedImage.TYPE_INT_ARGB);
-        
-        //int width = images.get(0).getWidth();
-        //int height = images.get(0).getHeight();
-        int N = images.size();
-        BufferedImage res = new BufferedImage(width,
-            height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = res.createGraphics();
-        //new Color
-        //g2.setColor(Color.red);
-        //g2.drawOval(10, 10, 1, 1);
-        //java.lang.System.out.println(getColor(res, 1, 1).getBlue());
-        int i,j,r,g,b,n;
-        //Color color;
-              
-      //long pre = System.currentTimeMillis();
+    public void getCutFon(BufferedImage original, boolean simple, int limit, int typePorog, boolean smenFon, double smenFonLim) {
 
-        for (i=0; i<width; i++)
-            for (j=0; j<height; j++) {
-                r = 0;
-                g = 0;
-                b = 0;
-                for (n=0; n<N; n++) {
-                    Color color = getColor(images.get(n), i, j);
-                    r += color.getRed();
-                    g += color.getGreen();
-                    b += color.getBlue();
-                }
-                r = r/N;
-                g = g/N;
-                b = b/N;
-                g2.setColor(new Color(r,g,b));
-                g2.drawLine(i, j, i, j);
-            }
-      //long post = System.currentTimeMillis();
-      //java.lang.System.out.println(post-pre);
-        return res;
-    }*/
-    
-    public BufferedImage getCutFon(BufferedImage original, BufferedImage cutter, boolean simple, int limit, /*boolean toBit,*/ int typePorog, boolean smenFon, double smenFonLim) {
-  
-        int width = original.getWidth();
-        int height = original.getHeight();
-        
-        BufferedImage res = new BufferedImage(width,
-            height, BufferedImage.TYPE_INT_ARGB);
-        
-        //#
-        if (cutter==null)
-            return res;
-        //#
-        
-        Graphics2D g2 = res.createGraphics();
-        
         int[][] bitmap = null;
-        //int[][] raskras = null;
-        /*if (typePorog==1)
-            bitmap = new int[height][width];
-        
-        if (simple) {
-            for (int i=0; i<width; i++)
-                for (int j=0; j<height; j++) {
-                    Color cOrig = getColor(original, i, j);
-                    Color cCut = getColor(cutter, i, j);
-                    int r = Math.abs(cOrig.getRed()-cCut.getRed());
-                    int g = Math.abs(cOrig.getGreen()-cCut.getGreen());
-                    int b = Math.abs(cOrig.getBlue()-cCut.getBlue());
-                    g2.setColor(new Color(r,g,b));
-                    g2.drawLine(i, j, i, j);                
-                }
-        } else {
-            //int limit = 80;
-            int pixcount = width*height;
-            int backgrpixcount = 0;
-            for (int i=0; i<width; i++)
-                for (int j=0; j<height; j++) {
-                    Color cOrig = getColor(original, i, j);
-                    Color cCut = getColor(cutter, i, j);
-                    int value = Math.abs(cOrig.getRed()-cCut.getRed())+Math.abs(cOrig.getGreen()-cCut.getGreen())+Math.abs(cOrig.getBlue()-cCut.getBlue());
-                    value = colorToBin(value, limit);
-                    
-                    //if (toBit) {
-                    if (typePorog==1) {
-                        if (value==255) {
-                            backgrpixcount++;
-                            bitmap[j][i]=0;
-                        } else bitmap[j][i]=1;
-                        g2.setColor(new Color(value,value,value));   
-                    } else if (typePorog==2) {
-                        if (value==255) {
-                            backgrpixcount++;
-                            g2.setColor(new Color(value,value,value));
-                        } else
-                            g2.setColor(cOrig);
-                    } else if (typePorog==3) {
-                        if (value==255) {
-                            backgrpixcount++;
-                            g2.setColor(new Color(value,value,value));
-                        } else {
-                            int grey = (int)(cOrig.getRed()*0.299 + cOrig.getGreen()*0.587 + cOrig.getBlue()*0.114);
-                            //Color grey = new Color()
-                            g2.setColor(new Color(grey,grey,grey));
-                        }
-                    }
-                    
-                    g2.drawLine(i, j, i, j);   
-                }
-            
-            if (smenFon)
-                if (pixcount/(backgrpixcount+1)>smenFonLim) {//3) {
-                    images = new ArrayList<BufferedImage>();
-                    //images.add(original);
-                    rgb = null;
-                    //getProcessedResult(original, 1, 10);
-                    //res = 
-                    throw new RuntimeException("forgetOldBackground");
-                }
-        }*/
-        
+
         if (typePorog==1||typePorog==5)
             bitmap = new int[width][height];
         
+        int pos, cCutR, cCutG, cCutB, cOrigR, cOrigG, cOrigB;
+        
         if (simple) {
             for (int i=0; i<width; i++)
                 for (int j=0; j<height; j++) {
                     Color cOrig = getColor(original, i, j);
-                    Color cCut = getColor(cutter, i, j);
-                    int r = Math.abs(cOrig.getRed()-cCut.getRed());
-                    int g = Math.abs(cOrig.getGreen()-cCut.getGreen());
-                    int b = Math.abs(cOrig.getBlue()-cCut.getBlue());
-                    g2.setColor(new Color(r,g,b));
-                    g2.drawLine(i, j, i, j);                
+                    //Color cCut = getColor(cutter, i, j);
+                    pos = (i*height+j)*3;
+                    cCutR = rgbpix[pos];
+                    cCutG = rgbpix[pos+1];
+                    cCutB = rgbpix[pos+2];
+                    int r = Math.abs(cOrig.getRed()-cCutR);
+                    int g = Math.abs(cOrig.getGreen()-cCutG);
+                    int b = Math.abs(cOrig.getBlue()-cCutB);
+                    rgbpix[pos] = r;
+                    rgbpix[pos+1] = g;
+                    rgbpix[pos+2] = b;
                 }
         } else {
             //int limit = 80;
@@ -855,9 +734,16 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
             int backgrpixcount = 0;
             for (int i=0; i<width; i++)
                 for (int j=0; j<height; j++) {
+                    pos = (i*height+j)*3;
                     Color cOrig = getColor(original, i, j);
-                    Color cCut = getColor(cutter, i, j);
-                    int value = Math.abs(cOrig.getRed()-cCut.getRed())+Math.abs(cOrig.getGreen()-cCut.getGreen())+Math.abs(cOrig.getBlue()-cCut.getBlue());
+                    //Color cCut = getColor(cutter, i, j);
+                    cOrigR = cOrig.getRed();
+                    cOrigG = cOrig.getGreen();
+                    cOrigB = cOrig.getBlue();
+                    cCutR = rgbpix[pos];
+                    cCutG = rgbpix[pos+1];
+                    cCutB = rgbpix[pos+2];
+                    int value = Math.abs(cOrigR-cCutR)+Math.abs(cOrigG-cCutG)+Math.abs(cOrigB-cCutB);
                     value = colorToBin(value, limit);
                     
                     //if (toBit) {
@@ -866,31 +752,55 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                             backgrpixcount++;
                             bitmap[i][j]=-1;
                         } else bitmap[i][j]=1;
-                        g2.setColor(new Color(value,value,value));   
+                        rgbpix[pos]   = value;
+                        rgbpix[pos+1] = value;
+                        rgbpix[pos+2] = value;
+                        //g2.setColor(new Color(value,value,value));   
                     } else if (typePorog==2) {
+                        //System.out.println("qwe");
                         if (value==255) {
                             backgrpixcount++;
-                            g2.setColor(new Color(value,value,value));
-                        } else
-                            g2.setColor(cOrig);
+                            rgbpix[pos]   = value;
+                            rgbpix[pos+1] = value;
+                            rgbpix[pos+2] = value;
+                            //g2.setColor(new Color(value,value,value));
+                        } else {
+                            rgbpix[pos]   = cOrigR;
+                            rgbpix[pos+1] = cOrigG;
+                            rgbpix[pos+2] = cOrigB;
+                            //g2.setColor(cOrig);
+                        }
                     } else if (typePorog==3) {
                         if (value==255) {
                             backgrpixcount++;
-                            g2.setColor(new Color(value,value,value));
+                            rgbpix[pos]   = value;
+                            rgbpix[pos+1] = value;
+                            rgbpix[pos+2] = value;
+                            //g2.setColor(new Color(value,value,value));
                         } else {
                             int grey = (int)(cOrig.getRed()*0.299 + cOrig.getGreen()*0.587 + cOrig.getBlue()*0.114);
                             //Color grey = new Color()
-                            g2.setColor(new Color(grey,grey,grey));
+                            rgbpix[pos]   = grey;
+                            rgbpix[pos+1] = grey;
+                            rgbpix[pos+2] = grey;
+                            //g2.setColor(new Color(grey,grey,grey));
                         }
                     } else if (typePorog==4) {
                         if (value==255) {
                             backgrpixcount++;
-                            g2.setColor(new Color(value,value,value));
-                        } else
-                            g2.setColor(new Color(Math.abs(cOrig.getRed()-cCut.getRed()),Math.abs(cOrig.getGreen()-cCut.getGreen()),Math.abs(cOrig.getBlue()-cCut.getBlue())));
+                            rgbpix[pos]   = value;
+                            rgbpix[pos+1] = value;
+                            rgbpix[pos+2] = value;
+                            //g2.setColor(new Color(value,value,value));
+                        } else {
+                            rgbpix[pos]   = Math.abs(cOrigR-cCutR);
+                            rgbpix[pos+1] = Math.abs(cOrigG-cCutG);
+                            rgbpix[pos+2] = Math.abs(cOrigB-cCutB);
+                            //g2.setColor(new Color(Math.abs(cOrig.getRed()-cCut.getRed()),Math.abs(cOrig.getGreen()-cCut.getGreen()),Math.abs(cOrig.getBlue()-cCut.getBlue())));
+                        }
                     }
                     
-                    g2.drawLine(i, j, i, j);   
+                    //g2.drawLine(i, j, i, j);   
                 }
             
             if (smenFon)
@@ -900,27 +810,12 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                     rgb = null;
                     //getProcessedResult(original, 1, 10);
                     //res = 
-                    throw new RuntimeException("forgetOldBackground");
+                    ////////////throw new RuntimeException("forgetOldBackground");
                 }
         }
         
         if (net!=null && typePorog==5) {
 
-            
-            /*java.lang.System.out.print("\n\nДоДо");
-            
-            for (int h=0; h<height; h++) 
-                for (int w=0; w<width; w++) {
-                    if (w==0)
-                        java.lang.System.out.println();
-                    if (w>0)
-                        java.lang.System.out.print(".");
-                    java.lang.System.out.print(bitmap[w][h]==1?"#":" ");
-                }
-            
-            java.lang.System.out.print("\n\nФильтр");*/
-            //java.lang.System.out.print("\n\n");
-            //java.lang.System.out.println(bitmap[0].length);
             try {
                 bitmap = binfilter(bitmap);
                 //raskras = null;
@@ -929,136 +824,62 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                 
                 raskras = hopfielter(width, height);
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.out.println(e);
             }
-            /*for (int h=0; h<height; h++) 
-                for (int w=0; w<width; w++) {
-                    if (w==0)
-                        java.lang.System.out.println();
-                    if (w>0)
-                        java.lang.System.out.print(".");
-                    java.lang.System.out.print(bitmap[w][h]==1?"#":" ");
-                }*/
-            /*java.lang.System.out.println();java.lang.System.out.println();
-            for (int h=0; h<height; h++) 
-                for (int w=0; w<width; w++) {
-                    if (w==0)
-                        java.lang.System.out.println();
-                    if (w>0)
-                        java.lang.System.out.print(".");
-                    java.lang.System.out.print((raskras[w][h]==0?" ":raskras[w][h])+" ");
-                }////////
-            */
-            /*int[][] resbmp = net.resize(bitmap, width, height);
-                    / *{
-                            {-1, -1, -1, -1, -1}, 
-                            {-1, -1, -1, -1, -1},
-                            {-1, -1, -1, -1, -1},
-                            {-1, -1, -1, -1, -1},
-                            {-1, -1, -1, -1, -1}};* /
-            
-            int nw = net.getWidth();
-            int nh = net.getHeight();
-            
-            java.lang.System.out.print("\n\n\nДо");
-            
-            for (int h=0; h<nh; h++)
-                for (int w=0; w<nw; w++) {
-                    if (w==0)
-                        java.lang.System.out.println();
-                    if (w>0)
-                        java.lang.System.out.print(".");
-                    java.lang.System.out.print(resbmp[w][h]>=0?"#":" ");//resbmp[w][h]);//resbmp[w][h]>=0?"#":" ");
-                }
-            
-            resbmp = net.identify(resbmp);
-            
-            java.lang.System.out.print("\n\nПосле");
-            
-            for (int h=0; h<nh; h++)
-                for (int w=0; w<nw; w++) {
-                    if (w==0)
-                        java.lang.System.out.println();
-                    if (w>0)
-                        java.lang.System.out.print(".");
-                    java.lang.System.out.print(resbmp[w][h]>=0?"#":" ");//resbmp[w][h]);//resbmp[w][h]>=0?"#":" ");
-                }
-            */
-            /////int[] resbmp = net.resize(bitmap, width, height);
-            
-            //net.identify(resbmp);
-            
-            /*java.lang.System.out.println("\nДо трансформации");
 
-            for (int h=0; h<height; h++) {
-                for (int w=0; w<width; w++) {
-                    if (w==0)
-                        java.lang.System.out.println();
-                    if (w>0)
-                        java.lang.System.out.print(".");
-                    java.lang.System.out.print(bitmap[h][w]==1?"#":bitmap[h][w]);
-                }
-            }*/
-            /*java.lang.System.out.println("\n\nПосле трансформации");
-
-            int nw = net.getWidth();
-            int nh = net.getHeight();
-            
-            for (int h=0; h<nh; h++)
-                for (int w=0; w<nw; w++) {
-                    if (w==0)
-                        java.lang.System.out.println();
-                    if (w>0)
-                        java.lang.System.out.print(".");
-                    java.lang.System.out.print(resbmp[h*nw+w]==1?"#":" ");
-                }*/
-
-            //java.lang.System.out.println("\n");
         }
-            
-        return res;
     }
     
-    public BufferedImage getShineFon(BufferedImage original, BufferedImage cutter, boolean simple, int limit) {
-        int width = original.getWidth();
-        int height = original.getHeight();
-
-        BufferedImage res = new BufferedImage(width,
-            height, BufferedImage.TYPE_INT_ARGB);
+    public void getShineFon(BufferedImage original, BufferedImage cutter, boolean simple, int limit) {
         
-        Graphics2D g2 = res.createGraphics();
+        int pos;
         
         if (simple) {
             for (int i=0; i<width; i++)
                 for (int j=0; j<height; j++) {
+                    pos = (i*height+j)*3;
+                    
                     Color cOrig = getColor(original, i, j);
                     Color cCut = getColor(cutter, i, j);
                     int r = Math.abs(cOrig.getRed()-cCut.getRed());
                     int g = Math.abs(cOrig.getGreen()-cCut.getGreen());
                     int b = Math.abs(cOrig.getBlue()-cCut.getBlue());
-                    g2.setColor(new Color(r,g,b));
-                    g2.drawLine(i, j, i, j);                
+                    rgbpix[pos]   = r;
+                    rgbpix[pos+1] = g;
+                    rgbpix[pos+2] = b;
+                    //g2.setColor(new Color(r,g,b));
+                    //g2.drawLine(i, j, i, j);                
                 }
         } else {
             for (int i=0; i<width; i++)
                 for (int j=0; j<height; j++) {
+                    pos = (i*height+j)*3;
+                    
                     Color cOrig = getColor(original, i, j);
                     Color cCut = getColor(cutter, i, j);
                     int value = Math.abs(cOrig.getRed()-cCut.getRed())+Math.abs(cOrig.getGreen()-cCut.getGreen())+Math.abs(cOrig.getBlue()-cCut.getBlue());
                     value = colorToBin(value, limit);
 
-                    if (value==255)
-                        g2.setColor(new Color(cOrig.getRed(),cOrig.getGreen(),cOrig.getBlue()));   
+                    if (value==255) {
+                        rgbpix[pos]   = cOrig.getRed();
+                        rgbpix[pos+1] = cOrig.getGreen();
+                        rgbpix[pos+2] = cOrig.getBlue();
+                        //g2.setColor(new Color(cOrig.getRed(),cOrig.getGreen(),cOrig.getBlue()));  
+                    }
                     else {
                         Color shining = cOrig.brighter();
                         
-                        g2.setColor(new Color(Math.min((int)(shining.getRed()*1.2),255), Math.min((int)(shining.getGreen()*1.0),255), Math.min((int)(shining.getBlue()*0.7),255)));
+                        //g2.setColor(new Color(Math.min((int)(shining.getRed()*1.2),255), Math.min((int)(shining.getGreen()*1.0),255), Math.min((int)(shining.getBlue()*0.7),255)));
+                        
+                        rgbpix[pos]   = Math.min((int)(shining.getRed()*1.2),255);
+                        rgbpix[pos+1] = Math.min((int)(shining.getGreen()*1.0),255);
+                        rgbpix[pos+2] = Math.min((int)(shining.getBlue()*0.7),255);
+                        
                         //g2.setColor(new Color(cOrig.getRed(),cOrig.getGreen(),cOrig.getBlue()/2));   
                     }
-                    g2.drawLine(i, j, i, j);   
+                    //g2.drawLine(i, j, i, j);   
                 }
         }
-        return res;
     }
     
     private int colorToBin(int value, int limit) {
@@ -1135,6 +956,7 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
     //ArrayList<int[][]> objects = null;
     
     private int raskrasId = 0;
+    //private ArrayList<Integer> raskrasIds = new ArrayList<Integer>();
     
     private ArrayList<RaskrasObject> raskrobjs = new ArrayList<RaskrasObject>();
 
@@ -1158,8 +980,6 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
         
         for (int j=0; j<height; j++)
             for (int i=0; i<width; i++)
-                //if (ident_rekurs(i, j, objId)>0)
-                //    objId++;
                 ident_rekurs_start(i, j, width, height);
         
         
@@ -1170,35 +990,100 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
     private void ident_rekurs_start(int x, int y, int width, int height) {
         if (raskras[x][y]==1) {
             raskrasId++;
+            //raskrasIds.add(raskrasId);
             RaskrasObject raskrobj = new RaskrasObject();
             raskrobj.left = x;
             raskrobj.top = y;
             raskrobj.width = 1;
             raskrobj.height = 1;
-            /*raskrobj.img = new int[width][height];
-            for (int i=0; i<width; i++)
-                for (int j=0; j<height; j++)
-                    raskrobj.img[i][j] = 0;*/
             raskrobjs.add(raskrobj);
-            //System.out.println(x);
+            
+            ident_rekurs(x, y, width, height);
+            
+            int nd = distSkle;//5;
+            
+            try {
+                int shift = raskrasId-2;
+                RaskrasObject newr = raskrobjs.get(shift);
+                /*for (int s=0; s<shift; s++) {
+                    RaskrasObject oldr = raskrobjs.get(s);
+                    if ((newr.left>oldr.getRight()||newr.getRight()<oldr.left) && (newr.top>oldr.getBottom()||newr.getBottom()<oldr.top)) {
+                    } else {
+                        //System.out.println("intersection");
+                        for (int i=newr.left; i<newr.width; i++)
+                            for (int j=newr.top; j<newr.height; j++) {
+                                if (raskras[i][j]==shift)
+                                    raskras[i][j] = s;
+                            }
+
+                        oldr.width = Math.max(Math.max(oldr.width, newr.width), Math.max(oldr.getRight()-newr.left, newr.getRight()-oldr.left));
+                        oldr.height = Math.max(Math.max(oldr.height, newr.height), Math.max(oldr.getBottom()-newr.top, newr.getBottom()-oldr.top));
+
+                        oldr.left = Math.min(oldr.left, newr.left);
+                        oldr.top = Math.min(oldr.top, newr.top);
+
+                        raskrasId--;
+                        raskrobjs.remove(shift);
+                        break;
+                    }
+                }*/
+                
+                for (int s=0; s<shift; s++) {
+                    RaskrasObject oldr = raskrobjs.get(s);
+                    int oldId = s+2;
+                    if ((newr.left>(oldr.getRight()+nd)||newr.getRight()<(oldr.left-nd)) && (newr.top>(oldr.getBottom()+nd)||newr.getBottom()<(oldr.top-nd))) {
+                    } else {
+                        //System.out.println("intersection");
+                        for (int i=oldr.left; i<oldr.getRight(); i++)
+                            for (int j=oldr.top; j<oldr.getBottom(); j++) {
+                                if (raskras[i][j]==oldId)
+                                    raskras[i][j] = raskrasId;
+                            }
+
+                        newr.width = Math.max(Math.max(oldr.width, newr.width), Math.max(oldr.getRight()-newr.left, newr.getRight()-oldr.left));
+                        newr.height = Math.max(Math.max(oldr.height, newr.height), Math.max(oldr.getBottom()-newr.top, newr.getBottom()-oldr.top));
+
+                        newr.left = Math.min(oldr.left, newr.left);
+                        newr.top = Math.min(oldr.top, newr.top);
+
+                        //raskrasId--;
+                        //raskrobjs.remove(shift);
+                        
+                        oldr.width = 0;
+                        oldr.height = 0;
+                    }
+                }
+                
+            } catch (Exception e) {
+                System.out.println("CATCH");
+            }
+            
         }
-        ident_rekurs(x, y, width, height);
+/*        ident_rekurs(x, y, width, height);
         
+        try {
+            int shift = raskrasId-2;
+            RaskrasObject newr = raskrobjs.get(shift);
+            for (int i=0; i<shift; i++) {
+                RaskrasObject oldr = raskrobjs.get(i);
+                if ((newr.left>oldr.getRight()||newr.getRight()<oldr.left) && (newr.top>oldr.getBottom()||newr.getBottom()<oldr.top)) {
+                } else {
+                    System.out.println("intersection");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }*/
     }
     
     private void ident_rekurs(int x, int y, int width, int height) {
-        /*if (raskras[x][y]>1) {
-            System.out.println("\n\n>1\n\n");
-            return;
-        }
-        if (raskras[x][y]==0)
-            return;// 0;*/
+
         if (raskras[x][y]>1||raskras[x][y]==0)
-            return;// 0;
+            return;
         raskras[x][y] = raskrasId;
         RaskrasObject raskrobj = raskrobjs.get(raskrasId-2);
         
-        if (x<0)
+        /*if (x<0)
             System.out.println("x<0 qqq");
         if (y<0)
             System.out.println("y<0 qqq");
@@ -1206,43 +1091,30 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
             System.out.println("x>=width qqq");
         if (y>=height)
             System.out.println("y>=height qqq");
-        
+        */
         if (x>=0&&x<raskrobj.left) {
             raskrobj.left--;
             raskrobj.width++;
-            if (raskrobj.getRight()>width)
-                System.out.println("errrrorrrrWidth1 "+raskrasId);
+            /*if (raskrobj.getRight()>width)
+                System.out.println("errrrorrrrWidth1 "+raskrasId);*/
 
         } else if (x<width&&x>=raskrobj.getRight()) {
             raskrobj.width++;
-            if (raskrobj.getRight()>width)
-                System.out.println("errrrorrrrWidth2 "+raskrasId);
+            /*if (raskrobj.getRight()>width)
+                System.out.println("errrrorrrrWidth2 "+raskrasId);*/
         }
         
         if (y>=0&&y<raskrobj.top) {
             raskrobj.top--;
             raskrobj.height++;
-            if (raskrobj.getBottom()>height)
-                System.out.println("errrrorrrrHeight1 "+raskrasId);
+            /*if (raskrobj.getBottom()>height)
+                System.out.println("errrrorrrrHeight1 "+raskrasId);*/
         } else if (y<height&&y>=raskrobj.getBottom()) {
             raskrobj.height++;
-            if (raskrobj.getBottom()>height)
-                System.out.println("errrrorrrrHeight2 "+raskrasId);
+            /*if (raskrobj.getBottom()>height)
+                System.out.println("errrrorrrrHeight2 "+raskrasId);*/
         }
-        
-        /*if (raskrobj.getRight()>width||raskrobj.getBottom()>height) {
-            System.out.println("errrrorrrr");
-        }*/
-        
-        //System.out.println(raskrasId+" "+raskrobj.left+" "+raskrobj.getRight()+" "+raskrobj.top+" "+raskrobj.getBottom()+" "+width+" "+height);
-        
-        //raskrobj.img[x][y]=1;
-        
-        /*if (x<width-1)
-            ident_rekurs(x+1,y, width, height);
-        if (x>0)
-            ident_rekurs(x-1,y, width, height);*/
-        
+       
         if (x>0)
             if (raskras[x-1][y]==1) {
                 //System.out.println("\nx-1, y x="+x+" y="+y+"\n");
@@ -1250,63 +1122,42 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
             }
         if (y>0)
             if (raskras[x][y-1]==1) {
-                //System.out.println("\nx, y-1 x="+x+" y="+y+"\n");
                 ident_rekurs(x,y-1, width, height);
             }
         if (x>0&&y>0)
             if (raskras[x-1][y-1]==1) {
-                //System.out.println("\nx-1,y-1 x="+x+" y="+y+"\n");
                 ident_rekurs(x-1,y-1, width, height);
             }
         if (x<width-1)
             if (raskras[x+1][y]==1) {
-                //System.out.println("\nx+1,y x="+x+" y="+y+"\n");
                 ident_rekurs(x+1,y, width, height);
             }
         if (y<height-1)
             if (raskras[x][y+1]==1) {
-                //System.out.println("\nx,y+1 x="+x+" y="+y+"\n");
                 ident_rekurs(x,y+1, width, height);
             }
         if (x<width-1&&y<height-1)
             if (raskras[x+1][y+1]==1) {
-                //System.out.println("\nx+1,y+1 x="+x+" y="+y+"\n");
                 ident_rekurs(x+1,y+1, width, height);
             }
         if (x>0&&y<height-1)
             if (raskras[x-1][y+1]==1) {
-                //System.out.println("\nx-1,y+1 x="+x+" y="+y+"\n");
                 ident_rekurs(x-1,y+1, width, height);
             }
         if (x<width-1&&y>0)
             if (raskras[x+1][y-1]==1) {
-                //System.out.println("\nx+1,y-1 x="+x+" y="+y+"\n");
                 ident_rekurs(x+1,y-1, width, height);
             }
-        
-        /*for (int i=-1; i<2; i++)
-            for (int j=-1; j<2; j++)
-                if (i!=0&&j!=0)
-                    try {
-                        ident_rekurs(x+i,y+j, width, height);
-                    } catch (Exception e) {}*/
-        //return;// 1;
     }
     
-    public BufferedImage getFinalImage(BufferedImage original) {
-
-        BufferedImage res = new BufferedImage(original.getWidth(),
-            original.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    public void getFinalImage(BufferedImage original) {
         
         if (raskras==null)
-            return original;
+            return;
         
         int count = raskrasId-1;
-        
-        int width = original.getWidth();
-        int height = original.getHeight();
-        
-        Graphics2D g2 = res.createGraphics();
+       
+        int pos;
         
         //g2.setColor(Color.BLACK);
         
@@ -1318,8 +1169,13 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
         
         for (int i=0; i<width; i++)
             for (int j=0; j<height; j++) {
-                g2.setColor(getColorFromRaster(raster, cmodel, i, j));
-                g2.drawLine(i, j, i, j);
+                pos = (i*height+j)*3;
+                Color color = getColorFromRaster(raster, cmodel, i, j);
+                rgbpix[pos]   = color.getRed();
+                rgbpix[pos+1] = color.getGreen();
+                rgbpix[pos+2] = color.getBlue();
+                //g2.setColor(getColorFromRaster(raster, cmodel, i, j));
+                //g2.drawLine(i, j, i, j);
             }
         
         //g2.setColor(Color.WHITE);
@@ -1335,9 +1191,13 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
             //if (raskrobj.left>0&&raskrobj.top>0&&raskrobj.getRight()<width&&raskrobj.getBottom()<height) {
             if (access) {
                 int objRaskrasId = id+2;
-                g2.setColor(new Color((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
+                int randR = (int)(Math.random()*255);
+                int randG = (int)(Math.random()*255);
+                int randB = (int)(Math.random()*255);
+                //g2.setColor(new Color((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
                 for (int i=raskrobj.left; i<raskrobj.getRight(); i++)
                     for (int j=raskrobj.top; j<raskrobj.getBottom(); j++) {
+                        pos = (i*height+j)*3;
                         //System.out.println(i+" "+j);
                     /* if (raskras[i][j]==objRaskrasId)
                             g2.setColor(Color.BLACK);
@@ -1348,7 +1208,10 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                             if (raskras[i][j]==objRaskrasId) {
                                 //g2.setColor(Color.YELLOW);
                                 //g2.setColor(Color.YELLOW);
-                                g2.drawLine(i, j, i, j);
+                                rgbpix[pos]   = randR;
+                                rgbpix[pos+1] = randG;
+                                rgbpix[pos+2] = randB;
+                                //g2.drawLine(i, j, i, j);
                             } /*else {
                                 getColor(original, i, j);
                                 g2.drawLine(i, j, i, j);
@@ -1360,7 +1223,7 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
                     }
             }
         }
-        return res;
+        //return res;
     }
     
     private int[][] hopfielter (int width, int height) {
@@ -1400,6 +1263,7 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
         for (int k=0; k<raskrobjs.size(); k++) {
             RaskrasObject robj = raskrobjs.get(k);
             int[][] robjpixs = allrobjpixs.get(k);
+            if (robjpixs!=null)
             for (int i=0, ii = robj.left; i<robj.width; i++, ii++)
                 for (int j=0, jj = robj.top; j<robj.height; j++, jj++) {
                     raskras[ii][jj] = robjpixs[i][j]==-1?0:(k+2);
