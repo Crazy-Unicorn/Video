@@ -17,11 +17,11 @@ import javax.imageio.ImageIO;
  */
 public class Hopfield {
 
-    private int width;
-    private int height;
+    public int width;
+    public int height;
     private int[][] net;
     
-    private ArrayList<int[]> examples;
+    public ArrayList<int[]> examples;
     
     //private int exCount = 3;
     
@@ -170,7 +170,7 @@ public class Hopfield {
     public int[][] identify(int[][] figure) {
 
         //int count = width*height;
-        double sum;
+        /*double sum;
 
         int wh, whs;
         
@@ -198,7 +198,37 @@ public class Hopfield {
                 break;
             }
         }
-        return figure;
+        return figure;*/
+        
+        if (examples.isEmpty())
+            return figure;
+        
+        //int all = width*height;
+        int maxsovp = 0;
+        int maxpos = 0;
+        int oldmaxsovp = 0;
+        
+        for (int k=0; k<examples.size(); k++) {
+            int[] ex = examples.get(k);
+            for (int i=0; i<width; i++)
+                for (int j=0; j<height; j++) {
+                    if (ex[i*height+j]==figure[i][j]) {
+                        maxsovp++;
+                    }
+                }
+            if (oldmaxsovp<maxsovp) {
+                oldmaxsovp = maxsovp;
+                maxpos = k;
+            }
+        }
+        
+        int[] bestex = examples.get(maxpos);
+        int[][] res = new int[width][height];
+        for (int i=0; i<width; i++)
+            for (int j=0; j<height; j++)
+                res[i][j] = bestex[i*height+j];
+        
+        return res;
     }
     
     public int[][] resize(int[][] figure, int width, int height) { //figure[width][height]
@@ -393,12 +423,12 @@ public class Hopfield {
         if (width==0 && height==0)
             return null;
         
-        figure = resize(figure, width, height);
-        figure = identify(figure);
+        //figure = resize(figure, width, height);
+        //figure = identify(figure);
 
         //System.out.println(figure.length+" x "+figure[0].length);
         
-        figure = resize_back(figure, width, height);
+        //figure = resize_back(figure, width, height);
             
         return figure;
     }

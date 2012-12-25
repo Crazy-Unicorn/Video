@@ -327,6 +327,7 @@ public class Foo {
     int height = 0;
     
     int distSkle = 0;
+    boolean skle = false;
     
     public void processview(VideoPanel panel, VideoPanel output, MainFrame frame, int each, int framesCount, int colorlimit) {
         stop = false;
@@ -343,6 +344,7 @@ public class Foo {
         noBorderFigures = frame.isSelectedNoBorderFigures();
         
         distSkle = frame.getDistSkleValue();
+        skle = frame.getSkleValue();
         
         smenFonLim = 2;
         try {
@@ -1000,64 +1002,66 @@ public BufferedImage processFrame(BufferedImage image, byte[] frame, int width, 
             
             ident_rekurs(x, y, width, height);
             
-            int nd = distSkle;//5;
+            if (skle) {
             
-            try {
-                int shift = raskrasId-2;
-                RaskrasObject newr = raskrobjs.get(shift);
-                /*for (int s=0; s<shift; s++) {
-                    RaskrasObject oldr = raskrobjs.get(s);
-                    if ((newr.left>oldr.getRight()||newr.getRight()<oldr.left) && (newr.top>oldr.getBottom()||newr.getBottom()<oldr.top)) {
-                    } else {
-                        //System.out.println("intersection");
-                        for (int i=newr.left; i<newr.width; i++)
-                            for (int j=newr.top; j<newr.height; j++) {
-                                if (raskras[i][j]==shift)
-                                    raskras[i][j] = s;
-                            }
+                //int nd = distSkle;//5;
 
-                        oldr.width = Math.max(Math.max(oldr.width, newr.width), Math.max(oldr.getRight()-newr.left, newr.getRight()-oldr.left));
-                        oldr.height = Math.max(Math.max(oldr.height, newr.height), Math.max(oldr.getBottom()-newr.top, newr.getBottom()-oldr.top));
+                try {
+                    int shift = raskrasId-2;
+                    RaskrasObject newr = raskrobjs.get(shift);
+                    /*for (int s=0; s<shift; s++) {
+                        RaskrasObject oldr = raskrobjs.get(s);
+                        if ((newr.left>oldr.getRight()||newr.getRight()<oldr.left) && (newr.top>oldr.getBottom()||newr.getBottom()<oldr.top)) {
+                        } else {
+                            //System.out.println("intersection");
+                            for (int i=newr.left; i<newr.width; i++)
+                                for (int j=newr.top; j<newr.height; j++) {
+                                    if (raskras[i][j]==shift)
+                                        raskras[i][j] = s;
+                                }
 
-                        oldr.left = Math.min(oldr.left, newr.left);
-                        oldr.top = Math.min(oldr.top, newr.top);
+                            oldr.width = Math.max(Math.max(oldr.width, newr.width), Math.max(oldr.getRight()-newr.left, newr.getRight()-oldr.left));
+                            oldr.height = Math.max(Math.max(oldr.height, newr.height), Math.max(oldr.getBottom()-newr.top, newr.getBottom()-oldr.top));
 
-                        raskrasId--;
-                        raskrobjs.remove(shift);
-                        break;
+                            oldr.left = Math.min(oldr.left, newr.left);
+                            oldr.top = Math.min(oldr.top, newr.top);
+
+                            raskrasId--;
+                            raskrobjs.remove(shift);
+                            break;
+                        }
+                    }*/
+
+                    for (int s=0; s<shift; s++) {
+                        RaskrasObject oldr = raskrobjs.get(s);
+                        int oldId = s+2;
+                        if ((newr.left>(oldr.getRight()+distSkle)||newr.getRight()<(oldr.left-distSkle)) && (newr.top>(oldr.getBottom()+distSkle)||newr.getBottom()<(oldr.top-distSkle))) {
+                        } else {
+                            //System.out.println("intersection");
+                            for (int i=oldr.left; i<oldr.getRight(); i++)
+                                for (int j=oldr.top; j<oldr.getBottom(); j++) {
+                                    if (raskras[i][j]==oldId)
+                                        raskras[i][j] = raskrasId;
+                                }
+
+                            newr.width = Math.max(Math.max(oldr.width, newr.width), Math.max(oldr.getRight()-newr.left, newr.getRight()-oldr.left));
+                            newr.height = Math.max(Math.max(oldr.height, newr.height), Math.max(oldr.getBottom()-newr.top, newr.getBottom()-oldr.top));
+
+                            newr.left = Math.min(oldr.left, newr.left);
+                            newr.top = Math.min(oldr.top, newr.top);
+
+                            //raskrasId--;
+                            //raskrobjs.remove(shift);
+
+                            oldr.width = 0;
+                            oldr.height = 0;
+                        }
                     }
-                }*/
-                
-                for (int s=0; s<shift; s++) {
-                    RaskrasObject oldr = raskrobjs.get(s);
-                    int oldId = s+2;
-                    if ((newr.left>(oldr.getRight()+nd)||newr.getRight()<(oldr.left-nd)) && (newr.top>(oldr.getBottom()+nd)||newr.getBottom()<(oldr.top-nd))) {
-                    } else {
-                        //System.out.println("intersection");
-                        for (int i=oldr.left; i<oldr.getRight(); i++)
-                            for (int j=oldr.top; j<oldr.getBottom(); j++) {
-                                if (raskras[i][j]==oldId)
-                                    raskras[i][j] = raskrasId;
-                            }
 
-                        newr.width = Math.max(Math.max(oldr.width, newr.width), Math.max(oldr.getRight()-newr.left, newr.getRight()-oldr.left));
-                        newr.height = Math.max(Math.max(oldr.height, newr.height), Math.max(oldr.getBottom()-newr.top, newr.getBottom()-oldr.top));
-
-                        newr.left = Math.min(oldr.left, newr.left);
-                        newr.top = Math.min(oldr.top, newr.top);
-
-                        //raskrasId--;
-                        //raskrobjs.remove(shift);
-                        
-                        oldr.width = 0;
-                        oldr.height = 0;
-                    }
+                } catch (Exception e) {
+                    System.out.println("CATCH");
                 }
-                
-            } catch (Exception e) {
-                System.out.println("CATCH");
             }
-            
         }
 /*        ident_rekurs(x, y, width, height);
         

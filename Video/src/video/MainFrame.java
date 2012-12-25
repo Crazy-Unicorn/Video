@@ -113,6 +113,9 @@ public class MainFrame extends javax.swing.JFrame {
         return smenFonLimit;
     }
     
+    public boolean getSkleValue() {
+        return checkboxSkle.isSelected();
+    }
     /**
      * Creates new form MainFrame
      */
@@ -126,7 +129,7 @@ public class MainFrame extends javax.swing.JFrame {
         System.out.println(c==d);*/
         
         initComponents();
-        net = new Hopfield(7, 7);
+        net = new Hopfield(10, 12);
         net.init();
         net.learn();
         
@@ -266,6 +269,7 @@ public class MainFrame extends javax.swing.JFrame {
         checkboxNoBorderFigures = new javax.swing.JCheckBox();
         distSkle = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
+        checkboxSkle = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Видео в символы");
@@ -362,7 +366,7 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
-        framesCount.setText("50");
+        framesCount.setText("10");
 
         fcPlus.setText("+");
         fcPlus.addActionListener(new java.awt.event.ActionListener() {
@@ -429,7 +433,7 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
-        smenFonLimit.setText("25");
+        smenFonLimit.setText("2");
 
         jLabel5.setText("обратный предел по смене фона");
 
@@ -437,11 +441,14 @@ public class MainFrame extends javax.swing.JFrame {
 
         rbuttonItog.setText("итог");
 
+        checkboxNoBorderFigures.setSelected(true);
         checkboxNoBorderFigures.setText("не учитывать граничные фигуры");
 
         distSkle.setText("5");
 
         jLabel6.setText("Дистанция склейки (в пикс.)");
+
+        checkboxSkle.setText("склеивать фигуры");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -493,32 +500,35 @@ public class MainFrame extends javax.swing.JFrame {
                                 .addComponent(jLabel3))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(10, 10, 10)
-                                .addComponent(distSkle, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(checkboxSkle)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGap(58, 58, 58)
-                                        .addComponent(rbuttonFonModel))
-                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(distSkle, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(58, 58, 58)
+                                                .addComponent(rbuttonFonModel))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jLabel6)))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel6)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(rbuttonPorogBit)
-                                    .addComponent(rbuttonItog))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(rbuttonPorogColorSubstr)
-                                        .addGap(17, 17, 17)
-                                        .addComponent(jLabel5)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(smenFonLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(rbuttonPorogColor)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(rbuttonPorogBit)
+                                            .addComponent(rbuttonItog))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(rbuttonPorogGrey)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(checkboxSmenFon)))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(rbuttonPorogColorSubstr)
+                                                .addGap(17, 17, 17)
+                                                .addComponent(jLabel5)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(smenFonLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(rbuttonPorogColor)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(rbuttonPorogGrey)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(checkboxSmenFon)))))
                                 .addContainerGap())))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -565,11 +575,13 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(checkboxNoBorderFigures)
                     .addComponent(distSkle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
-                .addGap(29, 29, 29)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(checkboxSkle)
+                .addGap(40, 40, 40)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(generated, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(121, Short.MAX_VALUE))
+                .addContainerGap(87, Short.MAX_VALUE))
         );
 
         pack();
@@ -825,6 +837,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton buttonSimpleView;
     private javax.swing.JButton buttonStart;
     private javax.swing.JCheckBox checkboxNoBorderFigures;
+    private javax.swing.JCheckBox checkboxSkle;
     private javax.swing.JCheckBox checkboxSmenFon;
     private javax.swing.JButton colLimMinus;
     private javax.swing.JButton colLimPlus;
